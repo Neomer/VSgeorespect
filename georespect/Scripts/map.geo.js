@@ -264,8 +264,42 @@ class Info extends IInfo {
     Интерфейс IGeoCoder служит для унификации работы с разными службами геокодирования.
 */
 class IGeoCoder {
-    Find(address) {
+    Find(address, callback) {
         throw "Not implemented!";
+    }
+}
+
+class GeoCoderResultCollection {
+    constructor() {
+        this.array = new Array();
+    }
+
+    push(object) {
+        this.array.push(object);
+    }
+
+    get Count() {
+        return this.array.length;
+    }
+
+    get AddressList() {
+        var ret = new Array();
+        this.array.forEach(function (e) {
+            ret.push(e.Address);
+        });
+        return ret;
+    }
+
+    get AutocompleteData() {
+        var ret = new Array();
+        this.array.forEach(function (e) {
+            ret.push({
+                label: e.Address,
+                value: e.Address,
+                longlat: e.Coordinates
+            });
+        });
+        return ret;
     }
 }
 
@@ -285,7 +319,7 @@ class GeoCoderResult {
 }
 
 class GoogleGeoCoder extends IGeoCoder {
-    Find(address) {
+    Find(address, callback) {
         return null;
     }
 }
@@ -295,12 +329,12 @@ class YandexGeoCoder extends IGeoCoder {
         super();
     }
 
-    Find(address) {
+    Find(address, callback) {
         var results = ymaps.geocode(address, {
             json: true
         });
 
-        var ret = new Array();
+        var ret = new GeoCoderResultCollection();
         results.then(
             function (res) {
                 res.GeoObjectCollection.featureMember.forEach(function (e) {
@@ -311,12 +345,13 @@ class YandexGeoCoder extends IGeoCoder {
                         )
                     );
                 });
+                console.log(res);
+                callback(ret);
             },
             function (err) {
                 console.log(err);
             }
         );
-        return ret;
     }
 }
 
@@ -407,7 +442,19 @@ map.CreateObject(new Polygon(new Array()));
 console.log(map);
 
 ymaps.ready(function () {
+    $('#autocomplete').keyup(function () {
+        if ($(this).val().length >= 3) {
+            map.GeoCoder.Find($(this).val(), function (result) {
+                $('#autocomplete').autocomplete({
+                    source: result.AutocompleteData,
+                    select: function (e, ui) {
+                        console.log(ui);
+                    }
+                });
+            });
+        }
+    });
+
     map.Load();
-    console.log(map.GeoCoder.Find("Ижевск"));
 });
 
