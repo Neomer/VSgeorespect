@@ -85,16 +85,36 @@ class Brush extends IBrush {
     Интерфейс ICoordinates служит для унификации работы с разными типами координатных систем.
 */
 class ICoordinates {
-    getLat() {
+    get Lat() {
         throw "Not implemented!";
     }
-    getLng() {
+    get Lng() {
         throw "Not implemented!";
     }
-    toString() {
+    get String() {
         throw "Not implemented!";
     }
-    fromString() {
+    fromString(data) {
+        throw "Not implemented!";
+    }
+}
+
+class YandexCoordinates extends ICoordinates {
+    constructor(value) {
+        super();
+        this.coordinates = value;
+    }
+
+    get Lat() {
+        return this.constructor[0];
+    }
+    get Lng() {
+        return this.constructor[1];
+    }
+    get String() {
+        throw "Not implemented!";
+    }
+    fromString(data) {
         throw "Not implemented!";
     }
 }
@@ -249,6 +269,21 @@ class IGeoCoder {
     }
 }
 
+class GeoCoderResult {
+    constructor(address, coordinates) {
+        this.address = address;
+        this.coordinates = coordinates;
+    }
+    
+    get Address() {
+        return this.address;
+    }
+
+    get Coordinates() {
+        return this.coordinates;
+    }
+}
+
 class GoogleGeoCoder extends IGeoCoder {
     Find(address) {
         return null;
@@ -256,8 +291,32 @@ class GoogleGeoCoder extends IGeoCoder {
 }
 
 class YandexGeoCoder extends IGeoCoder {
+    constructor() {
+        super();
+    }
+
     Find(address) {
-        return null;
+        var results = ymaps.geocode(address, {
+            json: true
+        });
+
+        var ret = new Array();
+        results.then(
+            function (res) {
+                res.GeoObjectCollection.featureMember.forEach(function (e) {
+                    ret.push(
+                        new GeoCoderResult(
+                            e.GeoObject.name,
+                            new YandexCoordinates(e.GeoObject.Point.pos)
+                        )
+                    );
+                });
+            },
+            function (err) {
+                console.log(err);
+            }
+        );
+        return ret;
     }
 }
 
@@ -267,16 +326,22 @@ class YandexGeoCoder extends IGeoCoder {
 class IMap {
 
     constructor(divName) {
+        this.divName = divName;
         this.divElement = $(divName);
         this.selectedBrush = new Brush();
         this.selectedObject = null;
         this.isInit = false;
         this.objects = new Array();
+        this.geocoder = null;
     }
 
     get MapElement() {
         return this.divElement;
     };
+
+    get ElementName() {
+        return this.divName;
+    }
 
     // Первоначальная инициализация карты
     Init() {
@@ -295,6 +360,10 @@ class IMap {
         }
     }
 
+    get GeoCoder() {
+        return this.geocoder;
+    }
+
     get SelectedObject() {
         return selectedObject;
     }
@@ -310,12 +379,22 @@ class IMap {
 class GoogleMap extends IMap {
     constructor(divName) {
         super(divName);
+        this.geocoder = new GoogleGeoCoder();
     }
 }
 
 class YandexMap extends IMap {
     constructor(divName) {
         super(divName);
+        this.geocoder = new YandexGeoCoder();
+    }
+
+    Load() {
+        this.instance = new ymaps.Map(this.ElementName, {
+            center:[55.76, 37.64],
+            zoom:2
+        });
+        super.Load();
     }
 }
 
@@ -327,5 +406,8 @@ map.CreateObject(new Polygon(new Array()));
 
 console.log(map);
 
-map.Load();
+ymaps.ready(function () {
+    map.Load();
+    console.log(map.GeoCoder.Find("Ижевск"));
+});
 
