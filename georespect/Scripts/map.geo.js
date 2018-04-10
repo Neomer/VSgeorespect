@@ -170,6 +170,12 @@ class IPolyline extends ICompositeObject {
     constructor(object) {
         super(object);
     }
+}
+
+class Polyline extends IPolyline {
+    constructor(object) {
+        super(object);
+    }
 
     Draw() {
         console.log('Draw Polyline using line color ' + this.Brush.LineColor.String);
@@ -183,6 +189,12 @@ class IPolygon extends ICompositeObject {
     constructor(object) {
         super(object);
     }
+}
+
+class Polygon extends IPolygon {
+    constructor(object) {
+        super(object);
+    }
 
     Draw() {
         console.log('Draw Polygon using line color ' + this.Brush.LineColor.String + ' and fill color ' + this.Brush.FillColor.String);
@@ -193,6 +205,12 @@ class IPolygon extends ICompositeObject {
     Интерфейс IPolyline расширяет ICompositeObject для линии
 */
 class ILine extends ICompositeObject {
+    constructor(object) {
+        super(object);
+    }
+}
+
+class Line extends ILine {
     constructor(object) {
         super(object);
     }
@@ -211,12 +229,35 @@ class IInfo extends IObject {
     }
 }
 
+class Info extends IInfo {
+    constructor(object) {
+        super(object);
+    }
+
+    Draw() {
+        console.log('Draw Info');
+    }
+}
+
+
 /*
     Интерфейс IGeoCoder служит для унификации работы с разными службами геокодирования.
 */
 class IGeoCoder {
     Find(address) {
         throw "Not implemented!";
+    }
+}
+
+class GoogleGeoCoder extends IGeoCoder {
+    Find(address) {
+        return null;
+    }
+}
+
+class YandexGeoCoder extends IGeoCoder {
+    Find(address) {
+        return null;
     }
 }
 
@@ -266,10 +307,23 @@ class IMap {
 
 };
 
-var map = new IMap('map');
-map.CreateObject(new ILine(new Array()));
-map.CreateObject(new ILine(new Array()));
-map.CreateObject(new IPolygon(new Array()));
+class GoogleMap extends IMap {
+    constructor(divName) {
+        super(divName);
+    }
+}
+
+class YandexMap extends IMap {
+    constructor(divName) {
+        super(divName);
+    }
+}
+
+
+var map = new YandexMap('map');
+map.CreateObject(new Line(new Array()));
+map.CreateObject(new Line(new Array()));
+map.CreateObject(new Polygon(new Array()));
 
 console.log(map);
 
