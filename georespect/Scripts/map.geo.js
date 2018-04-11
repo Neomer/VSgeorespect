@@ -409,6 +409,7 @@ class IMap {
         object.Brush = this.selectedBrush;
     }
 
+    
 };
 
 class GoogleMap extends IMap {
@@ -425,11 +426,35 @@ class YandexMap extends IMap {
     }
 
     Load() {
+
         this.instance = new ymaps.Map(this.ElementName, {
-            center:[55.76, 37.64],
-            zoom:2
+            center: [56.852379, 53.202749],
+            zoom: 16,
+            minZoom: 16,
+            avoidFractionalZoom: false
         });
+
+        this.instance.behaviors
+            .disable('scrollZoom')
+            .disable('dblClickZoom')
+            .disable('rightMouseButtonMagnifier')
+            .disable('leftMouseButtonMagnifier')
+            .disable('ruler')
+            .disable('routeEditor');
+
+        this.instance.controls
+            .remove('fullscreenControl')
+            .remove('routeEditor')
+            .remove('rulerControl')
+            .remove('searchControl')
+            .remove('trafficControl')
+            .remove('zoomControl');
+
         super.Load();
+    }
+
+    SetZoom(value) {
+        this.instance.setZoom(value);
     }
 }
 
@@ -455,6 +480,9 @@ ymaps.ready(function () {
         }
     });
 
+    $('#zoom').keyup(function () {
+        map.SetZoom($('#zoom').val());
+    });
     map.Load();
 });
 
