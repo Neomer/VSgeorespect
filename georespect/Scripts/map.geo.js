@@ -194,12 +194,8 @@ class ICompositeObject extends IObject {
         this.coordinates.length > 1;
     }
 
-    AddVertex(coords) {
-        if (this.VerticiesCount < this.MaxVerticies) {
-            this.coordinates.push(coords);
-        } else {
-            this.coordinates[this.VerticiesCount - 1] = coords;
-        }
+    get VerticiesCount() {
+        return this.coordinates.length;
     }
 }
 
@@ -221,6 +217,13 @@ class NonClosedCompositeObject extends ICompositeObject {
         super(object);
     }
 
+    AddVertex(coords) {
+        if (this.VerticiesCount < this.MaxVerticies) {
+            this.coordinates.push(coords);
+        } else {
+            this.coordinates[this.VerticiesCount - 1] = coords;
+        }
+    }
 }
 
 /*
@@ -355,7 +358,7 @@ class YandexObjectFactory extends IObjectFactory {
     CreateObject(type) {
         switch (type) {
             case 'info': return new YandexLine(null);
-            case 'line': return new YandexLine(null);
+            case 'line': return new YandexLine(new ymaps.Polyline());
             case 'polyline': return new YandexLine(null);
             case 'polygon': return new YandexLine(null);
             default: return null;
@@ -503,10 +506,13 @@ class IMap {
     }
 
     get SelectedObject() {
-        return selectedObject;
+        return this.selectedObject;
     }
 
     CreateObject(object) {
+        if (Object.is(object, null) || Object.is(object, undefined)) {
+            throw "Null reference exception!";
+        }
         this.objects.push(object);
         this.selectedObject = object;
         object.Brush = this.selectedBrush;
@@ -569,8 +575,12 @@ class YandexMap extends IMap {
     BeginDrawing(type) {
         this.cursor.setKey('crosshair');
         var map = this.instance;
+        var instance = this;
+        this.CreateObject(new YandexObjectFactory().CreateObject(type))
         map.events.add('click', function (e) {
             var coords = new YandexCoordinates(e.get('coords'));
+            instance.SelectedObject.AddVertex(coords);
+            console.log(instance.SelectedObject);
         });
     }
 
@@ -668,7 +678,7 @@ ymaps.ready(function () {
         selected: function (n, o) {
             console.log('Tool changed from ' + o + ' to ' + n);
             if (n != null && n != undefined) {
-                map.BeginDrawing();
+                map.BeginDrawing(n);
             } else {
                 map.EndDrawing();
             }
