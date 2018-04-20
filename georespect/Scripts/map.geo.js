@@ -409,7 +409,13 @@ class IMap {
         object.Brush = this.selectedBrush;
     }
 
-    
+    BeginDrawing() {
+        throw "Not implemented!";
+    }
+
+    EndDrawing() {
+        throw "Not implemented!";
+    }
 };
 
 class GoogleMap extends IMap {
@@ -426,13 +432,15 @@ class YandexMap extends IMap {
     }
 
     Load() {
-
         this.instance = new ymaps.Map(this.ElementName, {
             center: [56.852379, 53.202749],
             zoom: 16,
             minZoom: 16,
             avoidFractionalZoom: false
         });
+
+        var cursor = this.instance.cursors.push('arrow');
+        cursor.setKey('arrow');
 
         this.instance.behaviors
             .disable('scrollZoom')
@@ -449,7 +457,6 @@ class YandexMap extends IMap {
             .remove('searchControl')
             .remove('trafficControl')
             .remove('zoomControl');
-
         super.Load();
     }
 
@@ -466,7 +473,9 @@ map.CreateObject(new Polygon(new Array()));
 
 console.log(map);
 
+
 ymaps.ready(function () {
+    /*
     $('#autocomplete').keyup(function () {
         if ($(this).val().length >= 3) {
             map.GeoCoder.Find($(this).val(), function (result) {
@@ -483,6 +492,78 @@ ymaps.ready(function () {
     $('#zoom').keyup(function () {
         map.SetZoom($('#zoom').val());
     });
+    */
+
+    (function ($) {
+        $.fn.toolbar = function (options) {
+            var settings = $.extend({
+                controls: [],
+                selected: function (selected, old) { }
+            }, options);
+
+            var instance = $(this);
+
+            return this.each(function () {
+                instance.addClass('toolbar');
+                settings.controls.forEach(function (e) {
+                    var element = document.createElement('div');
+                    if (e.image != null && e.image != undefined)
+                    {
+                        $(element).html('<img src="/Content/Images/' + e.image + '" />')
+                    }
+                    $(element).addClass('toolbar-button');
+                    $(element).attr('command', e.command);
+                    $(element).click(function (e) {
+                        var old = $(this).parent().find('.toolbar-button-selected').attr('command');
+                        if ($(this).hasClass('toolbar-button-selected')) {
+                            $(this).removeClass('toolbar-button-selected');
+                            settings.selected(null, old);
+                        } else {
+                            $(this).parent().find('.toolbar-button').removeClass('toolbar-button-selected');
+                            $(this).addClass('toolbar-button-selected');
+                            settings.selected($(this).attr('command'), old);
+                        }
+                    });
+                    instance.append(element);
+                });
+            });
+        };
+
+    }(jQuery));
+
+    $('#toolbar').toolbar({
+        controls: [
+            {
+                title: "Сообщение",
+                command: 'message',
+                image: "x16/speech-bubble.png"
+            },
+            {
+                title: "Линия",
+                command: 'line',
+                image: "x16/line.png"
+            },
+            {
+                title: "Ломанная",
+                command: 'polyline',
+                image: "x16/polyline.png"
+            },
+            {
+                title: "Полигон",
+                command: 'polygon',
+                image: "x16/hexagon.png"
+            }
+        ],
+        selected: function (n, o) {
+            console.log('Tool changed from ' + o + ' to ' + n);
+            if (n != null && n != undefined) {
+                map.BeginDrawing();
+            } else {
+                map.EndDrawing();
+            }
+        }
+    });
+
     map.Load();
 });
 
