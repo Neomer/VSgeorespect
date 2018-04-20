@@ -317,6 +317,10 @@ class YandexLine extends Line {
     constructor(object) {
         super(object);
     }
+
+    AddVertex(coords) {
+        super.AddVertex(coords);
+    }
 }
 
 /*
@@ -590,16 +594,22 @@ class YandexMap extends IMap {
         this.instance.setZoom(value);
     }
 
+    CreateObject(object) {
+        super.CreateObject(object);
+        this.instance.geoObjects.add(object.Object);
+    }
+
     BeginDrawing(type) {
         this.cursor.setKey('crosshair');
         var map = this.instance;
         var instance = this;
-        this.CreateObject(new YandexObjectFactory().CreateObject(type))
+        var obj = new YandexObjectFactory().CreateObject(type);
+        this.CreateObject(obj);
         map.events.add('click', function (e) {
             var coords = new YandexCoordinates(e.get('coords'));
             instance.SelectedObject.AddVertex(coords);
-            console.log(instance.SelectedObject);
         });
+
     }
 
     EndDrawing() {
