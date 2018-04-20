@@ -194,9 +194,6 @@ class ICompositeObject extends IObject {
         this.coordinates.length > 1;
     }
 
-    get VerticiesCount() {
-        return this.coordinates.length;
-    }
 }
 
 /*
@@ -207,6 +204,17 @@ class ClosedCompositeObject extends ICompositeObject {
         super(object);
     }
 
+    AddVertex(coords) {
+        if (this.VerticiesCount < this.MaxVerticies) {
+            this.coordinates.slice(this.VerticiesCount, 0, coords);
+        } else {
+            this.coordinates[this.VerticiesCount - 1] = coords;
+        }
+    }
+
+    get VerticiesCount() {
+        return this.Coordinates.length == 0 ? 0 : this.Coordinates.length + 1;
+    }
 }
 
 /*
@@ -223,6 +231,10 @@ class NonClosedCompositeObject extends ICompositeObject {
         } else {
             this.coordinates[this.VerticiesCount - 1] = coords;
         }
+    }
+
+    get VerticiesCount() {
+        return this.Coordinates.length;
     }
 }
 
@@ -269,6 +281,12 @@ class Polygon extends IPolygon {
 
     get MaxVerticies() {
         return 15;
+    }
+}
+
+class YandexPolygon extends Polygon {
+    constructor(object) {
+        super(object);
     }
 }
 
@@ -360,7 +378,7 @@ class YandexObjectFactory extends IObjectFactory {
             case 'info': return new YandexLine(null);
             case 'line': return new YandexLine(new ymaps.Polyline());
             case 'polyline': return new YandexLine(null);
-            case 'polygon': return new YandexLine(null);
+            case 'polygon': return new YandexPolygon(new ymaps.Polygon());
             default: return null;
         }
     }
