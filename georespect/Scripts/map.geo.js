@@ -163,6 +163,18 @@ class IObject {
     get IsValid() {
         throw "Not implemented!";
     }
+
+    get MaxVerticies() {
+        throw "Not implemented!";
+    }
+
+    get VerticiesCount() {
+        throw "Not implemented!";
+    }
+
+    AddVertex(coords) {
+        throw "Not implemented!";
+    }
 }
 
 /*
@@ -181,12 +193,40 @@ class ICompositeObject extends IObject {
     get IsValid() {
         this.coordinates.length > 1;
     }
+
+    AddVertex(coords) {
+        if (this.VerticiesCount < this.MaxVerticies) {
+            this.coordinates.push(coords);
+        } else {
+            this.coordinates[this.VerticiesCount - 1] = coords;
+        }
+    }
+}
+
+/*
+    Класс реализующий замкнутый контур 
+*/
+class ClosedCompositeObject extends ICompositeObject {
+    constructor(object) {
+        super(object);
+    }
+
+}
+
+/*
+    Класс реализующий незамкнутый контур 
+*/
+class NonClosedCompositeObject extends ICompositeObject {
+    constructor(object) {
+        super(object);
+    }
+
 }
 
 /*
     Интерфейс IPolyline расширяет ICompositeObject для представления ломанной
 */
-class IPolyline extends ICompositeObject {
+class IPolyline extends NonClosedCompositeObject {
     constructor(object) {
         super(object);
     }
@@ -200,12 +240,16 @@ class Polyline extends IPolyline {
     Draw() {
         console.log('Draw Polyline using line color ' + this.Brush.LineColor.String);
     }
+
+    get MaxVerticies() {
+        return 15;
+    }
 }
 
 /*
     Интерфейс IPolyline расширяет ICompositeObject для представления полигона (замкнутая линия с заливкой)
 */
-class IPolygon extends ICompositeObject {
+class IPolygon extends ClosedCompositeObject {
     constructor(object) {
         super(object);
     }
@@ -219,12 +263,16 @@ class Polygon extends IPolygon {
     Draw() {
         console.log('Draw Polygon using line color ' + this.Brush.LineColor.String + ' and fill color ' + this.Brush.FillColor.String);
     }
+
+    get MaxVerticies() {
+        return 15;
+    }
 }
 
 /*
     Интерфейс IPolyline расширяет ICompositeObject для линии
 */
-class ILine extends ICompositeObject {
+class ILine extends NonClosedCompositeObject {
     constructor(object) {
         super(object);
     }
@@ -238,6 +286,16 @@ class Line extends ILine {
     Draw() {
         console.log('Draw Line using line color ' + this.Brush.LineColor.String);
     }
+
+    get MaxVerticies() {
+        return 2;
+    }
+}
+
+class YandexLine extends Line {
+    constructor(object) {
+        super(object);
+    }
 }
 
 /*
@@ -246,6 +304,11 @@ class Line extends ILine {
 class IInfo extends IObject {
     constructor(object) {
         super(object);
+        this.coordinates = null;
+    }
+
+    get Coordinates() {
+        return this.coordinates;
     }
 }
 
@@ -257,8 +320,48 @@ class Info extends IInfo {
     Draw() {
         console.log('Draw Info');
     }
+
+    get MaxVerticies() {
+        return (this.coordinates == null) ? 0 : 1;
+    }
+
+    AddVertex(coords) {
+        if (this.VerticiesCount < this.MaxVerticies) {
+            this.coordinates.push(coords);
+        } else {
+            this.coordinates[this.VerticiesCount - 1] = coords;
+        }
+    }
 }
 
+/*
+    Интерфейс для фабрики создания объектов
+*/
+class IObjectFactory {
+    constructor() {
+
+    }
+
+    CreateObject(type) {
+        throw "Not implemented!";
+    }
+};
+
+class YandexObjectFactory extends IObjectFactory {
+    constructor() {
+        super();
+    }
+
+    CreateObject(type) {
+        switch (type) {
+            case 'info': return new YandexLine(null);
+            case 'line': return new YandexLine(null);
+            case 'polyline': return new YandexLine(null);
+            case 'polygon': return new YandexLine(null);
+            default: return null;
+        }
+    }
+}
 
 /*
     Интерфейс IGeoCoder служит для унификации работы с разными службами геокодирования.
@@ -439,8 +542,7 @@ class YandexMap extends IMap {
             avoidFractionalZoom: false
         });
 
-        var cursor = this.instance.cursors.push('arrow');
-        cursor.setKey('arrow');
+        this.cursor = this.instance.cursors.push('arrow');
 
         this.instance.behaviors
             .disable('scrollZoom')
@@ -463,14 +565,23 @@ class YandexMap extends IMap {
     SetZoom(value) {
         this.instance.setZoom(value);
     }
+
+    BeginDrawing(type) {
+        this.cursor.setKey('crosshair');
+        var map = this.instance;
+        map.events.add('click', function (e) {
+            var coords = new YandexCoordinates(e.get('coords'));
+        });
+    }
+
+    EndDrawing() {
+        this.cursor.setKey('arrow');
+        this.instance.events.remove('click');
+    }
 }
 
 
 var map = new YandexMap('map');
-map.CreateObject(new Line(new Array()));
-map.CreateObject(new Line(new Array()));
-map.CreateObject(new Polygon(new Array()));
-
 console.log(map);
 
 
