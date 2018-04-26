@@ -123,6 +123,30 @@ class YandexCoordinates extends ICoordinates {
     }
 }
 
+class GoogleCoordinates extends ICoordinates {
+    constructor(value) {
+        super();
+        this.coordinates = value;
+    }
+
+    get Coordinates() {
+        return this.coordinates;
+    }
+
+    get Lat() {
+        return this.constructor.lat;
+    }
+    get Lng() {
+        return this.constructor.lng;
+    }
+    get String() {
+        throw "Not implemented!";
+    }
+    fromString(data) {
+        throw "Not implemented!";
+    }
+}
+
 /*
     Интерфейс IObject представляет графический объект на карте.
 */
@@ -390,6 +414,18 @@ class YandexLine extends Line {
     }
 }
 
+class GoogleLine extends Line {
+    constructor(object) {
+        super(object);
+    }
+
+    AddVertex(coords) {
+    }
+
+    Draw() {
+    }
+}
+
 /*
     Интерфейс IPolyline расширяет IObject для представления информационной метки
 */
@@ -454,6 +490,22 @@ class YandexObjectFactory extends IObjectFactory {
             case 'line': return new YandexLine(new ymaps.Polyline([]));
             case 'polyline': return new YandexPolyline(new ymaps.Polyline([]));
             case 'polygon': return new YandexPolygon(new ymaps.Polygon([[]]));
+            default: return null;
+        }
+    }
+}
+
+class GoogleObjectFactory extends IObjectFactory {
+    constructor(map) {
+        super(map);
+    }
+
+    CreateObject(type) {
+        switch (type) {
+            case 'info': return new GoogleLine(null);
+            case 'line': return new GoogleLine(null);
+            case 'polyline': return new GooglePolyline(null);
+            case 'polygon': return new GooglePolygon(null);
             default: return null;
         }
     }
@@ -710,7 +762,6 @@ class YandexMap extends IMap {
         this.instance.events.remove('click');
     }
 }
-
 
 var map = new YandexMap('map');
 console.log(map);
