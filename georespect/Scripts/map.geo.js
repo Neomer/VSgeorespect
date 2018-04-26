@@ -136,18 +136,6 @@ class IObject {
         this.object = object;
     }
 
-    Init() {
-        throw "Not implemented!";
-    }
-
-    Draw() {
-        throw "Not implemented!";
-    }
-
-    Destroy() {
-        throw "Not implemented!";
-    }
-
     set Brush(newValue) {
         this.brush = newValue;
     }
@@ -164,15 +152,33 @@ class IObject {
         throw "Not implemented!";
     }
 
+    // Максимальное количетсво вершин
     get MaxVerticies() {
         throw "Not implemented!";
     }
 
+    // Количество вершин
     get VerticiesCount() {
         throw "Not implemented!";
     }
 
+    // Добавляет новую вершину к объекту
     AddVertex(coords) {
+        throw "Not implemented!";
+    }
+
+    // Инициализирует объект
+    Init() {
+        throw "Not implemented!";
+    }
+
+    // Отрисовывает объект
+    Draw() {
+        throw "Not implemented!";
+    }
+
+    // Уничтожает объект
+    Destroy() {
         throw "Not implemented!";
     }
 }
@@ -600,16 +606,26 @@ class YandexMap extends IMap {
     }
 
     BeginDrawing(type) {
-        this.cursor.setKey('crosshair');
+        this.EndDrawing();
         var map = this.instance;
         var instance = this;
-        var obj = new YandexObjectFactory().CreateObject(type);
-        this.CreateObject(obj);
-        map.events.add('click', function (e) {
-            var coords = new YandexCoordinates(e.get('coords'));
-            instance.SelectedObject.AddVertex(coords);
-        });
-
+        try 
+        {
+            var obj = new YandexObjectFactory().CreateObject(type);
+            if (obj != null && obj != undefined)
+            {
+                this.CreateObject(obj);
+                map.events.add('click', function (e) {
+                    var coords = new YandexCoordinates(e.get('coords'));
+                    instance.SelectedObject.AddVertex(coords);
+                });
+                this.cursor.setKey('crosshair');
+            }
+        }
+        catch (e)
+        {
+            console.log("Drawing failed! Exception: " + e.message);
+        }
     }
 
     EndDrawing() {
