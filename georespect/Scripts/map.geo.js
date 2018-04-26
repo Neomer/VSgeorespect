@@ -110,10 +110,10 @@ class YandexCoordinates extends ICoordinates {
     }
 
     get Lat() {
-        return this.constructor[0];
+        return this.coordinates[0];
     }
     get Lng() {
-        return this.constructor[1];
+        return this.coordinates[1];
     }
     get String() {
         throw "Not implemented!";
@@ -134,10 +134,10 @@ class GoogleCoordinates extends ICoordinates {
     }
 
     get Lat() {
-        return this.constructor.lat;
+        return this.coordinates.lat;
     }
     get Lng() {
-        return this.constructor.lng;
+        return this.coordinates.lng;
     }
     get String() {
         throw "Not implemented!";
@@ -420,6 +420,15 @@ class GoogleLine extends Line {
     }
 
     AddVertex(coords) {
+        var path = super.Object.getPath();
+        if (path.length < super.MaxVerticies)
+        {
+            path.push(coords.Coordinates);
+        }
+        else
+        {
+            path.setAt(path.length - 1, coords.Coordinates);
+        }
     }
 
     Draw() {
@@ -503,7 +512,7 @@ class GoogleObjectFactory extends IObjectFactory {
     CreateObject(type) {
         switch (type) {
             case 'info': return new GoogleLine(null);
-            case 'line': return new GoogleLine(null);
+            case 'line': return new GoogleLine(new google.maps.Polyline());
             case 'polyline': return new GooglePolyline(null);
             case 'polygon': return new GooglePolygon(null);
             default: return null;
@@ -673,7 +682,7 @@ class IMap {
         object.Brush = this.selectedBrush;
     }
 
-    BeginDrawing() {
+    BeginDrawing(type) {
         throw "Not implemented!";
     }
 
@@ -685,13 +694,14 @@ class IMap {
 class GoogleMap extends IMap {
     constructor(divName) {
         super(divName);
-        this.geocoder = new GoogleGeoCoder();
+
+        this.instance = null;
     }
 
     Init() {
         super.Init();
-        this.geocoder = new YandexGeoCoder();
-        this.factory = new YandexObjectFactory(this, this.instance);
+        this.geocoder = new GoogleGeoCoder();
+        this.factory = new GoogleObjectFactory(this, this.instance);
     }
 
     Load() {
@@ -699,11 +709,43 @@ class GoogleMap extends IMap {
             throw "Карты не были инициализированы!";
         }
 
+        this.instance = new google.maps.Map(document.getElementById('map'), {
+            zoom: 16,
+            center: { lat: 56.852379, lng: 53.202749 }
+        });
+        this.instance.setOptions({ draggableCursor: 'arrow' });
+
         super.Load();
     }
 
     Unload() {
 
+    }
+
+    BeginDrawing(type) {
+        this.EndDrawing();
+        var map = this.instance;
+        var instance = this;
+        //try 
+        {
+            var obj = super.ObjectFactory.CreateObject(type);
+            if (obj != null && obj != undefined) {
+                this.CreateObject(obj);
+                obj.Object.setMap(map);
+                map.addListener('click', function (e) {
+                    var coords = new GoogleCoordinates(e.latLng);
+                    instance.SelectedObject.AddVertex(coords);
+                    instance.SelectedObject.Draw();
+                });
+                map.setOptions({ draggableCursor: 'crosshair' });
+            }
+        }
+    }
+
+    EndDrawing() {
+        //this.cursor.setKey('arrow');
+        //this.instance.events.remove('click');
+        this.instance.setOptions({ draggableCursor: 'arrow' });
     }
 }
 
@@ -837,6 +879,7 @@ mapProvider.Add('google', new GoogleMap('map'));
 
 function InitGoogleMap() {
     mapProvider.Get('google').Init();
+    mapProvider.Select('google');
 }
 
 
@@ -923,9 +966,9 @@ ymaps.ready(function () {
         selected: function (n, o) {
             console.log('Tool changed from ' + o + ' to ' + n);
             if (n != null && n != undefined) {
-                map.BeginDrawing(n);
+                mapProvider.ActiveMap.BeginDrawing(n);
             } else {
-                map.EndDrawing();
+                mapProvider.ActiveMap.EndDrawing();
             }
         }
     });
@@ -946,6 +989,5 @@ ymaps.ready(function () {
     });
 
     mapProvider.Get('yandex').Init();
-    mapProvider.Select('yandex');
 });
 
