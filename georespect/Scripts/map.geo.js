@@ -310,6 +310,9 @@ class YandexPolyline extends Polyline {
     }
 
     Draw() {
+        super.Object.options.set({
+            strokeColor: super.Brush.LineColor.String
+        });
         super.Object.editor.startEditing();
     }
 }
@@ -385,6 +388,10 @@ class YandexPolygon extends Polygon {
     }
 
     Draw() {
+        super.Object.options.set({
+            strokeColor: super.Brush.LineColor.String,
+            fillColor: super.Brush.FillColor.String
+        });
         super.Object.editor.startEditing();
     }
 }
@@ -449,6 +456,9 @@ class YandexLine extends Line {
     }
 
     Draw() {
+        super.Object.options.set({
+            strokeColor: super.Brush.LineColor.String
+        });
         super.Object.editor.startEditing();
     }
 }
