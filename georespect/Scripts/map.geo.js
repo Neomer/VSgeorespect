@@ -651,6 +651,10 @@ class IMap {
         }
     }
 
+    Unload() {
+        throw "Not implemented!";
+    }
+
     get GeoCoder() {
         return this.geocoder;
     }
@@ -683,18 +687,44 @@ class GoogleMap extends IMap {
         super(divName);
         this.geocoder = new GoogleGeoCoder();
     }
+
+    Init() {
+        super.Init();
+        this.geocoder = new YandexGeoCoder();
+        this.factory = new YandexObjectFactory(this, this.instance);
+    }
+
+    Load() {
+        if (!super.IsInit) {
+            throw "Карты не были инициализированы!";
+        }
+
+        super.Load();
+    }
+
+    Unload() {
+
+    }
 }
 
 class YandexMap extends IMap {
     constructor(divName) {
         super(divName);
         this.instance = null;
+    }
 
+    Init() {
+        super.Init();
         this.geocoder = new YandexGeoCoder();
         this.factory = new YandexObjectFactory(this, this.instance);
     }
 
     Load() {
+        if (!super.IsInit)
+        {
+            throw "Карты не были инициализированы!";
+        }
+
         this.instance = new ymaps.Map(this.ElementName, {
             center: [56.852379, 53.202749],
             zoom: 16,
@@ -720,6 +750,12 @@ class YandexMap extends IMap {
             .remove('trafficControl')
             .remove('zoomControl');
         super.Load();
+    }
+
+    Unload() {
+        if (this.instance == null || this.instance == undefined)
+            return;
+        this.instance.destroy();
     }
 
     SetZoom(value) {
@@ -763,8 +799,45 @@ class YandexMap extends IMap {
     }
 }
 
-var map = new YandexMap('map');
-console.log(map);
+class MapProvider {
+    constructor() {
+        this.maps = {};
+        this.active = null;
+    }
+
+    Add(key, map) {
+        this.maps[key] = map;
+    }
+
+    Get(key) {
+        return this.maps[key];
+    }
+
+    Select(key) {
+        var maps = this.maps;
+        Object.keys(this.maps).forEach(function (k) {
+            maps[k].Unload();
+        });
+        this.active = this.maps[key];
+        this.active.Load();
+    }
+
+    get ActiveMap() {
+        if (this.active == null || this.active == undefined)
+        {
+            throw "Нет активной карты!";
+        }
+        return this.active;
+    }
+}
+
+var mapProvider = new MapProvider();
+mapProvider.Add('yandex', new YandexMap('map'));
+mapProvider.Add('google', new GoogleMap('map'));
+
+function InitGoogleMap() {
+    mapProvider.Get('google').Init();
+}
 
 
 ymaps.ready(function () {
@@ -872,6 +945,7 @@ ymaps.ready(function () {
         }
     });
 
-    map.Load();
+    mapProvider.Get('yandex').Init();
+    mapProvider.Select('yandex');
 });
 
