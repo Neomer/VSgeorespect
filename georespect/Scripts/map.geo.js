@@ -105,6 +105,10 @@ class YandexCoordinates extends ICoordinates {
         this.coordinates = value;
     }
 
+    get Coordinates() {
+        return this.coordinates;
+    }
+
     get Lat() {
         return this.constructor[0];
     }
@@ -267,6 +271,25 @@ class Polyline extends IPolyline {
     }
 }
 
+class YandexPolyline extends Polyline {
+    constructor(object) {
+        super(object);
+    }
+
+    Init() {
+
+    }
+
+    AddVertex(coords) {
+        var geometry = super.Object.geometry;
+        geometry.insert(geometry.getLength(), coords.Coordinates);
+    }
+
+    Draw() {
+        super.Object.editor.startEditing();
+    }
+}
+
 /*
     Интерфейс IPolyline расширяет ICompositeObject для представления полигона (замкнутая линия с заливкой)
 */
@@ -294,6 +317,15 @@ class YandexPolygon extends Polygon {
     constructor(object) {
         super(object);
     }
+
+    AddVertex(coords) {
+        var geometry = super.Object.geometry;
+        geometry.insert(geometry.getLength(), coords.Coordinates);
+    }
+
+    Draw() {
+        super.Object.editor.startEditing();
+    }
 }
 
 /*
@@ -310,8 +342,8 @@ class Line extends ILine {
         super(object);
     }
 
-    Draw() {
-        console.log('Draw Line using line color ' + this.Brush.LineColor.String);
+    Init() {
+
     }
 
     get MaxVerticies() {
@@ -325,7 +357,19 @@ class YandexLine extends Line {
     }
 
     AddVertex(coords) {
-        super.AddVertex(coords);
+        var geometry = super.Object.geometry;
+        if (geometry.getLength() < super.MaxVerticies)
+        {
+            geometry.insert(geometry.getLength(), coords.Coordinates);
+        }
+        else
+        {
+            geometry.set(geometry.getLength() - 1, coords.Coordinates);
+        }
+    }
+
+    Draw() {
+        super.Object.editor.startEditing();
     }
 }
 
@@ -369,8 +413,12 @@ class Info extends IInfo {
     Интерфейс для фабрики создания объектов
 */
 class IObjectFactory {
-    constructor() {
+    constructor(map) {
+        this.map = map;
+    }
 
+    get Map() {
+        return this.map;
     }
 
     CreateObject(type) {
@@ -379,16 +427,16 @@ class IObjectFactory {
 };
 
 class YandexObjectFactory extends IObjectFactory {
-    constructor() {
-        super();
+    constructor(map) {
+        super(map);
     }
 
     CreateObject(type) {
         switch (type) {
             case 'info': return new YandexLine(null);
-            case 'line': return new YandexLine(new ymaps.Polyline());
-            case 'polyline': return new YandexLine(null);
-            case 'polygon': return new YandexPolygon(new ymaps.Polygon());
+            case 'line': return new YandexLine(new ymaps.Polyline([]));
+            case 'polyline': return new YandexPolyline(new ymaps.Polyline([]));
+            case 'polygon': return new YandexPolygon(null);
             default: return null;
         }
     }
@@ -502,6 +550,11 @@ class IMap {
         this.isInit = false;
         this.objects = new Array();
         this.geocoder = null;
+        this.factory = null;
+    }
+
+    get ObjectFactory() {
+        return this.factory;
     }
 
     get MapElement() {
@@ -541,6 +594,7 @@ class IMap {
         if (Object.is(object, null) || Object.is(object, undefined)) {
             throw "Null reference exception!";
         }
+        object.Init();
         this.objects.push(object);
         this.selectedObject = object;
         object.Brush = this.selectedBrush;
@@ -565,7 +619,10 @@ class GoogleMap extends IMap {
 class YandexMap extends IMap {
     constructor(divName) {
         super(divName);
+        this.instance = null;
+
         this.geocoder = new YandexGeoCoder();
+        this.factory = new YandexObjectFactory(this, this.instance);
     }
 
     Load() {
@@ -609,23 +666,26 @@ class YandexMap extends IMap {
         this.EndDrawing();
         var map = this.instance;
         var instance = this;
-        try 
+        //try 
         {
-            var obj = new YandexObjectFactory().CreateObject(type);
+            var obj = super.ObjectFactory.CreateObject(type);
             if (obj != null && obj != undefined)
             {
                 this.CreateObject(obj);
                 map.events.add('click', function (e) {
                     var coords = new YandexCoordinates(e.get('coords'));
                     instance.SelectedObject.AddVertex(coords);
+                    instance.SelectedObject.Draw();
                 });
                 this.cursor.setKey('crosshair');
             }
         }
+        /*
         catch (e)
         {
             console.log("Drawing failed! Exception: " + e.message);
         }
+        */
     }
 
     EndDrawing() {
