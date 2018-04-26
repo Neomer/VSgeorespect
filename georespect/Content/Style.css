@@ -27,3 +27,9 @@
     height: 16px;
     margin-top: 5px;
 }
+
+select {
+    height: 32px;
+    min-width: 42px;
+    border-radius: 2px 2px;
+}
