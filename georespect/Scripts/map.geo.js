@@ -314,6 +314,26 @@ class YandexPolyline extends Polyline {
     }
 }
 
+class GooglePolyline extends Polyline {
+    constructor(object) {
+        super(object);
+    }
+
+    Init() {
+
+    }
+
+    AddVertex(coords) {
+        var path = super.Object.getPath();
+        path.push(coords.Coordinates);
+    }
+
+    Draw() {
+        super.Object.setOptions({ strokeColor: super.Brush.LineColor.String });
+        super.Object.setEditable(true);
+    }
+}
+
 /*
     Интерфейс IPolyline расширяет ICompositeObject для представления полигона (замкнутая линия с заливкой)
 */
@@ -432,6 +452,8 @@ class GoogleLine extends Line {
     }
 
     Draw() {
+        super.Object.setOptions({ strokeColor: super.Brush.LineColor.String });
+        super.Object.setEditable(true);
     }
 }
 
@@ -513,7 +535,7 @@ class GoogleObjectFactory extends IObjectFactory {
         switch (type) {
             case 'info': return new GoogleLine(null);
             case 'line': return new GoogleLine(new google.maps.Polyline());
-            case 'polyline': return new GooglePolyline(null);
+            case 'polyline': return new GooglePolyline(new google.maps.Polyline());
             case 'polygon': return new GooglePolygon(null);
             default: return null;
         }
@@ -631,6 +653,10 @@ class IMap {
         this.factory = null;
     }
 
+    get ActiveBrush() {
+        return this.selectedBrush;
+    }
+
     get ObjectFactory() {
         return this.factory;
     }
@@ -696,6 +722,7 @@ class GoogleMap extends IMap {
         super(divName);
 
         this.instance = null;
+        this.clickListener = null;
     }
 
     Init() {
@@ -708,6 +735,8 @@ class GoogleMap extends IMap {
         if (!super.IsInit) {
             throw "Карты не были инициализированы!";
         }
+
+        super.ActiveBrush.LineColor.RGB = '880000';
 
         this.instance = new google.maps.Map(document.getElementById('map'), {
             zoom: 16,
@@ -732,7 +761,7 @@ class GoogleMap extends IMap {
             if (obj != null && obj != undefined) {
                 this.CreateObject(obj);
                 obj.Object.setMap(map);
-                map.addListener('click', function (e) {
+                this.clickListener = map.addListener('click', function (e) {
                     var coords = new GoogleCoordinates(e.latLng);
                     instance.SelectedObject.AddVertex(coords);
                     instance.SelectedObject.Draw();
@@ -745,6 +774,9 @@ class GoogleMap extends IMap {
     EndDrawing() {
         //this.cursor.setKey('arrow');
         //this.instance.events.remove('click');
+        if (this.clickListener != null && this.clickListener != undefined) {
+            this.clickListener.remove();
+        }
         this.instance.setOptions({ draggableCursor: 'arrow' });
     }
 }
@@ -766,6 +798,8 @@ class YandexMap extends IMap {
         {
             throw "Карты не были инициализированы!";
         }
+
+        super.ActiveBrush.LineColor.RGB = '880000';
 
         this.instance = new ymaps.Map(this.ElementName, {
             center: [56.852379, 53.202749],
