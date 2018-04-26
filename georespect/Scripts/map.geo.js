@@ -337,7 +337,6 @@ class YandexPolygon extends Polygon {
         {
             path.push(coords.Coordinates);
         }
-        console.log(path);
         geometry.set(0, path);
     }
 
