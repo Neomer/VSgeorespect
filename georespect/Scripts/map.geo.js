@@ -981,6 +981,10 @@ ymaps.ready(function () {
 
             var instance = $(this);
 
+            this.flush = function () {
+                $(this).find('.toolbar-button-selected').removeClass('toolbar-button-selected');
+            }
+
             return this.each(function () {
                 instance.addClass('toolbar');
                 settings.controls.forEach(function (e) {
@@ -1011,7 +1015,7 @@ ymaps.ready(function () {
 
     }(jQuery));
 
-    $('#toolbar').toolbar({
+    var toolbar = $('#toolbar').toolbar({
         controls: [
             {
                 title: "Сообщение",
@@ -1055,6 +1059,7 @@ ymaps.ready(function () {
             }
         ],
         selected: function (n, o) {
+            toolbar.flush();
             mapProvider.Select(n);
         }
     });
