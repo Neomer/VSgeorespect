@@ -389,6 +389,25 @@ class YandexPolygon extends Polygon {
     }
 }
 
+class GooglePolygon extends Polygon {
+    constructor(object) {
+        super(object);
+    }
+
+    Init() {
+
+    }
+
+    AddVertex(coords) {
+        var paths = super.Object.getPaths().getAt(0).push(coords.Coordinates);
+    }
+
+    Draw() {
+        super.Object.setOptions({ strokeColor: super.Brush.LineColor.String, fillColor: super.Brush.FillColor.String });
+        super.Object.setEditable(true);
+    }
+}
+
 /*
     Интерфейс IPolyline расширяет ICompositeObject для линии
 */
@@ -536,7 +555,7 @@ class GoogleObjectFactory extends IObjectFactory {
             case 'info': return new GoogleLine(null);
             case 'line': return new GoogleLine(new google.maps.Polyline());
             case 'polyline': return new GooglePolyline(new google.maps.Polyline());
-            case 'polygon': return new GooglePolygon(null);
+            case 'polygon': return new GooglePolygon(new google.maps.Polygon());
             default: return null;
         }
     }
@@ -737,6 +756,8 @@ class GoogleMap extends IMap {
         }
 
         super.ActiveBrush.LineColor.RGB = '880000';
+        super.ActiveBrush.FillColor.RGB = '880000';
+        super.ActiveBrush.FillColor.Alpha = '88';
 
         this.instance = new google.maps.Map(document.getElementById('map'), {
             zoom: 16,
@@ -800,6 +821,8 @@ class YandexMap extends IMap {
         }
 
         super.ActiveBrush.LineColor.RGB = '880000';
+        super.ActiveBrush.FillColor.RGB = '880000';
+        super.ActiveBrush.FillColor.Alpha = '88';
 
         this.instance = new ymaps.Map(this.ElementName, {
             center: [56.852379, 53.202749],
