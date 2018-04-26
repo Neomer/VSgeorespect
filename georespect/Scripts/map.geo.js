@@ -318,9 +318,27 @@ class YandexPolygon extends Polygon {
         super(object);
     }
 
+    Init() {
+
+    }
+
     AddVertex(coords) {
         var geometry = super.Object.geometry;
-        geometry.insert(geometry.getLength(), coords.Coordinates);
+        var path = geometry.get(0);
+        if (path == null || path == undefined)
+        {
+            path = new Array();
+        }
+        if (path.length > 0)
+        {
+            path.splice(path.length - 1, 0, coords.Coordinates);
+        }
+        else
+        {
+            path.push(coords.Coordinates);
+        }
+        console.log(path);
+        geometry.set(0, path);
     }
 
     Draw() {
@@ -436,7 +454,7 @@ class YandexObjectFactory extends IObjectFactory {
             case 'info': return new YandexLine(null);
             case 'line': return new YandexLine(new ymaps.Polyline([]));
             case 'polyline': return new YandexPolyline(new ymaps.Polyline([]));
-            case 'polygon': return new YandexPolygon(null);
+            case 'polygon': return new YandexPolygon(new ymaps.Polygon([[]]));
             default: return null;
         }
     }
@@ -786,6 +804,21 @@ ymaps.ready(function () {
             } else {
                 map.EndDrawing();
             }
+        }
+    });
+
+    $('#colorPicker').ColorPicker({
+        color: '#0000ff',
+        onShow: function (colpkr) {
+            $(colpkr).fadeIn(500);
+            return false;
+        },
+        onHide: function (colpkr) {
+            $(colpkr).fadeOut(500);
+            return false;
+        },
+        onChange: function (hsb, hex, rgb) {
+            $('#colorPicker div').css('backgroundColor', '#' + hex);
         }
     });
 
