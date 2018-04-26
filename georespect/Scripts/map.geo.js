@@ -763,6 +763,8 @@ class GoogleMap extends IMap {
             zoom: 16,
             center: { lat: 56.852379, lng: 53.202749 }
         });
+
+        console.log(this.instance);
         this.instance.setOptions({ draggableCursor: 'arrow' });
 
         super.Load();
@@ -976,6 +978,8 @@ ymaps.ready(function () {
                     if (e.image != null && e.image != undefined)
                     {
                         $(element).html('<img src="/Content/Images/' + e.image + '" />')
+                    } else {
+                        $(element).html(e.title);
                     }
                     $(element).addClass('toolbar-button');
                     $(element).attr('command', e.command);
@@ -1027,6 +1031,21 @@ ymaps.ready(function () {
             } else {
                 mapProvider.ActiveMap.EndDrawing();
             }
+        }
+    });
+    $('#service_toolbar').toolbar({
+        controls: [
+            {
+                title: "Яндекс.Карты",
+                command: 'yandex'
+            },
+            {
+                title: 'Google Maps',
+                command: 'google'
+            }
+        ],
+        selected: function (n, o) {
+            mapProvider.Select(n);
         }
     });
 
