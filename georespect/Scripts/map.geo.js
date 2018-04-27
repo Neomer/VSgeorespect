@@ -1153,6 +1153,13 @@ ymaps.ready(function () {
         }
     });
 
+    $('#lineWeight').on('change', function (e) {
+        var weight = this.value;
+        mapProvider.GetAll().forEach(function (e) {
+            e.ActiveBrush.Weight = weight;
+        });
+    });
+
     mapProvider.Get('yandex').Init();
 });
 
