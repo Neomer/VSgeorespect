@@ -1117,6 +1117,11 @@ ymaps.ready(function () {
                     }
                     $(element).addClass('toolbar-button');
                     $(element).attr('command', e.command);
+                    console.log(e.tooltip);
+                    if (e.tooltip != null && e.tooltip != undefined && e.tooltip != '')
+                    {
+                        $(element).attr('title', e.tooltip)
+                    }
                     $(element).click(function (e) {
                         var old = $(this).parent().find('.toolbar-button-selected').attr('command');
                         if ($(this).hasClass('toolbar-button-selected')) {
@@ -1145,17 +1150,20 @@ ymaps.ready(function () {
             {
                 title: "Линия",
                 command: 'line',
-                image: "x16/line.png"
+                image: "x16/line.png",
+                tooltip: "Простая линия"
             },
             {
                 title: "Ломанная",
                 command: 'polyline',
-                image: "x16/polyline.png"
+                image: "x16/polyline.png",
+                tooltip: "Ломанная линия"
             },
             {
                 title: "Полигон",
                 command: 'polygon',
-                image: "x16/hexagon.png"
+                image: "x16/hexagon.png",
+                tooltip: "Заполненная цветом область"
             }
         ],
         selected: function (n, o) {
