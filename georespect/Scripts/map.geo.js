@@ -203,6 +203,7 @@ class IObject {
             throw "Object has wrong type!";
         }
         this.object = object;
+        this.objectIndex = 0;
     }
 
     set Brush(newValue) {
@@ -234,6 +235,19 @@ class IObject {
     // Добавляет новую вершину к объекту
     AddVertex(coords) {
         throw "Not implemented!";
+    }
+
+    // Устанавливает доп. параметры для объекта
+    SetParamaters (params) {
+        throw "Not implemented!";
+    }
+
+    get ObjectNumber() {
+        return this.objectIndex;
+    }
+
+    SetObjectNumber(index) {
+        this.objectIndex = index;
     }
 
     // Инициализирует объект
@@ -657,6 +671,68 @@ class Info extends IInfo {
     }
 }
 
+class GoogleInfo extends Info {
+    constructor(object) {
+        super(object);
+    }
+
+    Init() {
+
+    }
+
+    AddVertex(coords) {
+        super.Object.setPosition(coords.Coordinates);
+        super.Object.setOptions({ label: super.ObjectNumber.toString() });
+    }
+
+    Draw() {
+        
+    }
+
+    Edit() {
+
+    }
+
+    StopEditing() {
+        
+    }
+
+    Destroy() {
+        super.Object.setMap(null);
+    }
+}
+
+class YandexInfo extends Info {
+    constructor(object) {
+        super(object);
+    }
+
+    Init() {
+
+    }
+
+    AddVertex(coords) {
+        super.Object.geometry.setCoordinates(coords.Coordinates);
+        super.Object.properties.set('iconContent ', 'dfdf');
+    }
+
+    Draw() {
+        
+    }
+
+    Edit() {
+
+    }
+
+    StopEditing() {
+        
+    }
+
+    Destroy() {
+
+    }
+}
+
 /*
     Интерфейс для фабрики создания объектов
 */
@@ -681,7 +757,7 @@ class YandexObjectFactory extends IObjectFactory {
 
     CreateObject(type) {
         switch (type) {
-            case 'info': return new YandexLine(null);
+            case 'message': return new YandexInfo(new ymaps.Placemark([]));
             case 'line': return new YandexLine(new ymaps.Polyline([]));
             case 'polyline': return new YandexPolyline(new ymaps.Polyline([]));
             case 'polygon': return new YandexPolygon(new ymaps.Polygon([[]]));
@@ -693,16 +769,25 @@ class YandexObjectFactory extends IObjectFactory {
 class GoogleObjectFactory extends IObjectFactory {
     constructor(map) {
         super(map);
+        this.objIndexes = {};
     }
 
     CreateObject(type) {
+        var obj = null;
+        var num = (this.objIndexes[type] == null || this.objIndexes[type] == undefined) ? 1 : this.objIndexes[type] + 1;
         switch (type) {
-            case 'info': return new GoogleLine(null);
-            case 'line': return new GoogleLine(new google.maps.Polyline());
-            case 'polyline': return new GooglePolyline(new google.maps.Polyline());
-            case 'polygon': return new GooglePolygon(new google.maps.Polygon());
+            case 'message': obj = new GoogleInfo(new google.maps.Marker()); break;
+            case 'line': obj = new GoogleLine(new google.maps.Polyline()); break;
+            case 'polyline': obj = new GooglePolyline(new google.maps.Polyline()); break;
+            case 'polygon': obj = new GooglePolygon(new google.maps.Polygon()); break;
             default: return null;
         }
+        if (obj != null && obj != undefined)
+        {
+            obj.SetObjectNumber(num);
+            this.objIndexes[type] = num;
+        }
+        return obj;
     }
 }
 
