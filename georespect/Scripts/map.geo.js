@@ -904,6 +904,14 @@ class GoogleMap extends IMap {
 
     }
 
+    CreateObject(object) {
+        super.CreateObject(object);
+        var map = this;
+        object.Object.addListener('click', function (e) {
+            map.SelectObject(object);
+        });
+    }
+
     BeginDrawing(type) {
         this.EndDrawing();
         var map = this.instance;
@@ -990,6 +998,10 @@ class YandexMap extends IMap {
 
     CreateObject(object) {
         super.CreateObject(object);
+        var map = this;
+        object.Object.events.add('click', function (e) {
+            map.SelectObject(object);
+        });
         this.instance.geoObjects.add(object.Object);
     }
 
