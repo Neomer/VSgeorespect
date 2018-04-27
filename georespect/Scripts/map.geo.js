@@ -21,7 +21,12 @@ class RGBColor extends IColor {
     }
 
     set RGB(newValue) {
-        this.color = newValue;
+        if (newValue.length == 6) {
+            this.color = newValue;
+        }
+        else {
+            throw "Неизвестный формат цвета " + newValue;
+        }
     }
     
     get String() {
@@ -35,8 +40,33 @@ class RGBAColor extends RGBColor {
         this.alpha = '00';
     }
 
+    get RGBA() {
+        return this.String;
+    }
+
+    set RGBA(newValue) {
+        if (newValue.length == 6)
+        {
+            super.RGB = newValue;
+            this.alpha = 'ff';
+        }
+        else if (newValue.length == 8)
+        {
+            this.alpha = newValue.substring(0, 2);
+            super.RGB = newValue.substring(2);
+        }
+        else 
+        {
+            throw "Неизвестный формат цвета " + newValue;
+        }
+    }
+
     get Alpha() {
         return this.alpha;
+    }
+
+    get AlphaFloat() {
+        return parseInt('0x' + this.alpha) / 255;
     }
 
     set Alpha(newValue) {
@@ -44,7 +74,7 @@ class RGBAColor extends RGBColor {
     }
 
     get String() {
-        return super.String + this.alpha;
+        return "#" + super.RGB + this.alpha;
     }
 }
 
@@ -70,6 +100,7 @@ class Brush extends IBrush {
         super();
         this.lineColor = new RGBColor();
         this.fillColor = new RGBAColor();
+        this.weight = 1;
     }
 
     get LineColor() {
@@ -78,6 +109,14 @@ class Brush extends IBrush {
 
     get FillColor() {
         return this.fillColor;
+    }
+
+    get Weight() {
+        return this.weight;
+    }
+
+    set Weight(newValue) {
+        this.weight = newValue;
     }
 }
 
@@ -110,10 +149,34 @@ class YandexCoordinates extends ICoordinates {
     }
 
     get Lat() {
-        return this.constructor[0];
+        return this.coordinates[0];
     }
     get Lng() {
-        return this.constructor[1];
+        return this.coordinates[1];
+    }
+    get String() {
+        throw "Not implemented!";
+    }
+    fromString(data) {
+        throw "Not implemented!";
+    }
+}
+
+class GoogleCoordinates extends ICoordinates {
+    constructor(value) {
+        super();
+        this.coordinates = value;
+    }
+
+    get Coordinates() {
+        return this.coordinates;
+    }
+
+    get Lat() {
+        return this.coordinates.lat;
+    }
+    get Lng() {
+        return this.coordinates.lng;
     }
     get String() {
         throw "Not implemented!";
@@ -263,7 +326,7 @@ class Polyline extends IPolyline {
     }
 
     Draw() {
-        console.log('Draw Polyline using line color ' + this.Brush.LineColor.String);
+
     }
 
     get MaxVerticies() {
@@ -286,7 +349,34 @@ class YandexPolyline extends Polyline {
     }
 
     Draw() {
+        super.Object.options.set({
+            strokeColor: super.Brush.LineColor.String,
+            strokeWidth: super.Brush.Weight
+        });
         super.Object.editor.startEditing();
+    }
+}
+
+class GooglePolyline extends Polyline {
+    constructor(object) {
+        super(object);
+    }
+
+    Init() {
+
+    }
+
+    AddVertex(coords) {
+        var path = super.Object.getPath();
+        path.push(coords.Coordinates);
+    }
+
+    Draw() {
+        super.Object.setOptions({
+            strokeColor: super.Brush.LineColor.String,
+            strokeWeight: super.Brush.Weight
+        });
+        super.Object.setEditable(true);
     }
 }
 
@@ -305,7 +395,7 @@ class Polygon extends IPolygon {
     }
 
     Draw() {
-        console.log('Draw Polygon using line color ' + this.Brush.LineColor.String + ' and fill color ' + this.Brush.FillColor.String);
+
     }
 
     get MaxVerticies() {
@@ -341,7 +431,38 @@ class YandexPolygon extends Polygon {
     }
 
     Draw() {
+        console.log(super.Brush);
+        console.log(super.Brush.FillColor.String);
+        super.Object.options.set({
+            strokeColor: super.Brush.LineColor.String,
+            strokeWidth: super.Brush.Weight,
+            fillColor: super.Brush.FillColor.String
+        });
         super.Object.editor.startEditing();
+    }
+}
+
+class GooglePolygon extends Polygon {
+    constructor(object) {
+        super(object);
+    }
+
+    Init() {
+
+    }
+
+    AddVertex(coords) {
+        var paths = super.Object.getPaths().getAt(0).push(coords.Coordinates);
+    }
+
+    Draw() {
+        super.Object.setOptions({
+            strokeColor: super.Brush.LineColor.String,
+            strokeWeight: super.Brush.Weight,
+            fillOpacity: super.Brush.FillColor.AlphaFloat,
+            fillColor: super.Brush.FillColor.String
+        });
+        super.Object.setEditable(true);
     }
 }
 
@@ -386,7 +507,37 @@ class YandexLine extends Line {
     }
 
     Draw() {
+        super.Object.options.set({
+            strokeColor: super.Brush.LineColor.String,
+            strokeWidth: super.Brush.Weight
+        });
         super.Object.editor.startEditing();
+    }
+}
+
+class GoogleLine extends Line {
+    constructor(object) {
+        super(object);
+    }
+
+    AddVertex(coords) {
+        var path = super.Object.getPath();
+        if (path.length < super.MaxVerticies)
+        {
+            path.push(coords.Coordinates);
+        }
+        else
+        {
+            path.setAt(path.length - 1, coords.Coordinates);
+        }
+    }
+
+    Draw() {
+        super.Object.setOptions({
+            strokeColor: super.Brush.LineColor.String,
+            strokeWeight: super.Brush.Weight
+        });
+        super.Object.setEditable(true);
     }
 }
 
@@ -410,7 +561,7 @@ class Info extends IInfo {
     }
 
     Draw() {
-        console.log('Draw Info');
+
     }
 
     get MaxVerticies() {
@@ -454,6 +605,22 @@ class YandexObjectFactory extends IObjectFactory {
             case 'line': return new YandexLine(new ymaps.Polyline([]));
             case 'polyline': return new YandexPolyline(new ymaps.Polyline([]));
             case 'polygon': return new YandexPolygon(new ymaps.Polygon([[]]));
+            default: return null;
+        }
+    }
+}
+
+class GoogleObjectFactory extends IObjectFactory {
+    constructor(map) {
+        super(map);
+    }
+
+    CreateObject(type) {
+        switch (type) {
+            case 'info': return new GoogleLine(null);
+            case 'line': return new GoogleLine(new google.maps.Polyline());
+            case 'polyline': return new GooglePolyline(new google.maps.Polyline());
+            case 'polygon': return new GooglePolygon(new google.maps.Polygon());
             default: return null;
         }
     }
@@ -570,6 +737,10 @@ class IMap {
         this.factory = null;
     }
 
+    get ActiveBrush() {
+        return this.selectedBrush;
+    }
+
     get ObjectFactory() {
         return this.factory;
     }
@@ -585,6 +756,11 @@ class IMap {
     // Первоначальная инициализация карты
     Init() {
         this.isInit = true;
+
+        this.ActiveBrush.LineColor.RGB = '880000';
+        this.ActiveBrush.FillColor.RGB = '880000';
+        this.ActiveBrush.FillColor.Alpha = '88';
+        this.ActiveBrush.Weight = 2;
     }
 
     get IsInit() {
@@ -597,6 +773,10 @@ class IMap {
         {
             this.objects[i].Draw();
         }
+    }
+
+    Unload() {
+        throw "Not implemented!";
     }
 
     get GeoCoder() {
@@ -617,7 +797,7 @@ class IMap {
         object.Brush = this.selectedBrush;
     }
 
-    BeginDrawing() {
+    BeginDrawing(type) {
         throw "Not implemented!";
     }
 
@@ -629,7 +809,64 @@ class IMap {
 class GoogleMap extends IMap {
     constructor(divName) {
         super(divName);
+
+        this.instance = null;
+        this.clickListener = null;
+    }
+
+    Init() {
+        super.Init();
         this.geocoder = new GoogleGeoCoder();
+        this.factory = new GoogleObjectFactory(this, this.instance);
+
+    }
+
+    Load() {
+        if (!super.IsInit) {
+            throw "Карты не были инициализированы!";
+        }
+
+        this.instance = new google.maps.Map(document.getElementById('map'), {
+            zoom: 16,
+            center: { lat: 56.852379, lng: 53.202749 }
+        });
+
+        this.instance.setOptions({ draggableCursor: 'arrow' });
+
+        super.Load();
+    }
+
+    Unload() {
+
+    }
+
+    BeginDrawing(type) {
+        this.EndDrawing();
+        var map = this.instance;
+        var instance = this;
+        //try 
+        {
+            var obj = super.ObjectFactory.CreateObject(type);
+            if (obj != null && obj != undefined) {
+                this.CreateObject(obj);
+                obj.Object.setMap(map);
+                this.clickListener = map.addListener('click', function (e) {
+                    var coords = new GoogleCoordinates(e.latLng);
+                    instance.SelectedObject.AddVertex(coords);
+                    instance.SelectedObject.Draw();
+                });
+                map.setOptions({ draggableCursor: 'crosshair' });
+            }
+        }
+    }
+
+    EndDrawing() {
+        //this.cursor.setKey('arrow');
+        //this.instance.events.remove('click');
+        if (this.clickListener != null && this.clickListener != undefined) {
+            this.clickListener.remove();
+        }
+        this.instance.setOptions({ draggableCursor: 'arrow' });
     }
 }
 
@@ -637,12 +874,20 @@ class YandexMap extends IMap {
     constructor(divName) {
         super(divName);
         this.instance = null;
+    }
 
+    Init() {
+        super.Init();
         this.geocoder = new YandexGeoCoder();
         this.factory = new YandexObjectFactory(this, this.instance);
     }
 
     Load() {
+        if (!super.IsInit)
+        {
+            throw "Карты не были инициализированы!";
+        }
+
         this.instance = new ymaps.Map(this.ElementName, {
             center: [56.852379, 53.202749],
             zoom: 16,
@@ -668,6 +913,12 @@ class YandexMap extends IMap {
             .remove('trafficControl')
             .remove('zoomControl');
         super.Load();
+    }
+
+    Unload() {
+        if (this.instance == null || this.instance == undefined)
+            return;
+        this.instance.destroy();
     }
 
     SetZoom(value) {
@@ -711,9 +962,50 @@ class YandexMap extends IMap {
     }
 }
 
+class MapProvider {
+    constructor() {
+        this.maps = {};
+        this.active = null;
+    }
 
-var map = new YandexMap('map');
-console.log(map);
+    Add(key, map) {
+        this.maps[key] = map;
+    }
+
+    Get(key) {
+        return this.maps[key];
+    }
+
+    Select(key) {
+        var maps = this.maps;
+        Object.keys(this.maps).forEach(function (k) {
+            maps[k].Unload();
+        });
+        this.active = this.maps[key];
+        this.active.Load();
+    }
+
+    get ActiveMap() {
+        if (this.active == null || this.active == undefined)
+        {
+            throw "Нет активной карты!";
+        }
+        return this.active;
+    }
+
+    GetAll() {
+        return Object.values(this.maps);
+    }
+}
+
+var mapProvider = new MapProvider();
+mapProvider.Add('yandex', new YandexMap('map'));
+mapProvider.Add('google', new GoogleMap('map'));
+
+function InitGoogleMap() {
+    mapProvider.Get('google').Init();
+    mapProvider.Select('google');
+}
 
 
 ymaps.ready(function () {
@@ -745,6 +1037,10 @@ ymaps.ready(function () {
 
             var instance = $(this);
 
+            this.flush = function () {
+                $(this).find('.toolbar-button-selected').removeClass('toolbar-button-selected');
+            }
+
             return this.each(function () {
                 instance.addClass('toolbar');
                 settings.controls.forEach(function (e) {
@@ -752,6 +1048,8 @@ ymaps.ready(function () {
                     if (e.image != null && e.image != undefined)
                     {
                         $(element).html('<img src="/Content/Images/' + e.image + '" />')
+                    } else {
+                        $(element).html(e.title);
                     }
                     $(element).addClass('toolbar-button');
                     $(element).attr('command', e.command);
@@ -773,7 +1071,7 @@ ymaps.ready(function () {
 
     }(jQuery));
 
-    $('#toolbar').toolbar({
+    var toolbar = $('#toolbar').toolbar({
         controls: [
             {
                 title: "Сообщение",
@@ -799,28 +1097,62 @@ ymaps.ready(function () {
         selected: function (n, o) {
             console.log('Tool changed from ' + o + ' to ' + n);
             if (n != null && n != undefined) {
-                map.BeginDrawing(n);
+                mapProvider.ActiveMap.BeginDrawing(n);
             } else {
-                map.EndDrawing();
+                mapProvider.ActiveMap.EndDrawing();
             }
         }
     });
-
-    $('#colorPicker').ColorPicker({
-        color: '#0000ff',
-        onShow: function (colpkr) {
-            $(colpkr).fadeIn(500);
-            return false;
-        },
-        onHide: function (colpkr) {
-            $(colpkr).fadeOut(500);
-            return false;
-        },
-        onChange: function (hsb, hex, rgb) {
-            $('#colorPicker div').css('backgroundColor', '#' + hex);
+    $('#service_toolbar').toolbar({
+        controls: [
+            {
+                title: "Яндекс.Карты",
+                command: 'yandex'
+            },
+            {
+                title: 'Google Maps',
+                command: 'google'
+            }
+        ],
+        selected: function (n, o) {
+            toolbar.flush();
+            mapProvider.Select(n);
         }
     });
 
-    map.Load();
+    $("#lineColorPicker").spectrum({
+        flat: false,
+        showAlpha: false,
+        showPalette: true,
+        cancelText: 'Отмена',
+        chooseText: 'Применить',
+        color: "#880000",
+        maxSelectionSize: 4,
+        showButtons: false,
+        change: function (color) {
+            console.log('Color pick: ' + color.toHexString().substring(1));
+            mapProvider.GetAll().forEach(function (e) {
+                e.ActiveBrush.LineColor.RGB = color.toHexString().substring(1);
+            });
+        }
+    });
+
+    $("#fillColorPicker").spectrum({
+        flat: false,
+        showAlpha: true,
+        showPalette: true,
+        cancelText: 'Отмена',
+        chooseText: 'Применить',
+        color: "#88880000",
+        maxSelectionSize: 4,
+        showButtons: false,
+        change: function (color) {
+            mapProvider.GetAll().forEach(function (e) {
+                e.ActiveBrush.FillColor.RGBA = color.toHex8String().substring(1);
+            });
+        }
+    });
+
+    mapProvider.Get('yandex').Init();
 });
 

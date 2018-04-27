@@ -1,7 +1,8 @@
 ﻿
 .toolbar-button {
     display: inline-block;
-    width: 32px;
+    min-width: 32px;
+    padding: 5px;
     height: 32px;
     border: 1px solid #cecece;
     margin: 5px 1px;
@@ -25,11 +26,10 @@
 .toolbar-button > img {
     width: 16px;
     height: 16px;
-    margin-top: 5px;
 }
 
 select {
     height: 32px;
     min-width: 42px;
-    border-radius: 2px 2px;
+    border-radius: 3px 3px;
 }
