@@ -21,7 +21,12 @@ class RGBColor extends IColor {
     }
 
     set RGB(newValue) {
-        this.color = newValue;
+        if (newValue.length == 6) {
+            this.color = newValue;
+        }
+        else {
+            throw "Неизвестный формат цвета " + newValue;
+        }
     }
     
     get String() {
@@ -35,8 +40,33 @@ class RGBAColor extends RGBColor {
         this.alpha = '00';
     }
 
+    get RGBA() {
+        return this.String;
+    }
+
+    set RGBA(newValue) {
+        if (newValue.length == 6)
+        {
+            super.RGB = newValue;
+            this.alpha = 'ff';
+        }
+        else if (newValue.length == 8)
+        {
+            this.alpha = newValue.substring(0, 2);
+            super.RGB = newValue.substring(2);
+        }
+        else 
+        {
+            throw "Неизвестный формат цвета " + newValue;
+        }
+    }
+
     get Alpha() {
         return this.alpha;
+    }
+
+    get AlphaFloat() {
+        return parseInt('0x' + this.alpha) / 255;
     }
 
     set Alpha(newValue) {
@@ -44,7 +74,7 @@ class RGBAColor extends RGBColor {
     }
 
     get String() {
-        return super.String + this.alpha;
+        return "#" + super.RGB + this.alpha;
     }
 }
 
@@ -401,6 +431,8 @@ class YandexPolygon extends Polygon {
     }
 
     Draw() {
+        console.log(super.Brush);
+        console.log(super.Brush.FillColor.String);
         super.Object.options.set({
             strokeColor: super.Brush.LineColor.String,
             strokeWidth: super.Brush.Weight,
@@ -427,6 +459,7 @@ class GooglePolygon extends Polygon {
         super.Object.setOptions({
             strokeColor: super.Brush.LineColor.String,
             strokeWeight: super.Brush.Weight,
+            fillOpacity: super.Brush.FillColor.AlphaFloat,
             fillColor: super.Brush.FillColor.String
         });
         super.Object.setEditable(true);
@@ -959,6 +992,10 @@ class MapProvider {
         }
         return this.active;
     }
+
+    GetAll() {
+        return Object.values(this.maps);
+    }
 }
 
 var mapProvider = new MapProvider();
@@ -1083,18 +1120,36 @@ ymaps.ready(function () {
         }
     });
 
-    $('#colorPicker').ColorPicker({
-        color: '#0000ff',
-        onShow: function (colpkr) {
-            $(colpkr).fadeIn(500);
-            return false;
-        },
-        onHide: function (colpkr) {
-            $(colpkr).fadeOut(500);
-            return false;
-        },
-        onChange: function (hsb, hex, rgb) {
-            $('#colorPicker div').css('backgroundColor', '#' + hex);
+    $("#lineColorPicker").spectrum({
+        flat: false,
+        showAlpha: false,
+        showPalette: true,
+        cancelText: 'Отмена',
+        chooseText: 'Применить',
+        color: "#880000",
+        maxSelectionSize: 4,
+        showButtons: false,
+        change: function (color) {
+            console.log('Color pick: ' + color.toHexString().substring(1));
+            mapProvider.GetAll().forEach(function (e) {
+                e.ActiveBrush.LineColor.RGB = color.toHexString().substring(1);
+            });
+        }
+    });
+
+    $("#fillColorPicker").spectrum({
+        flat: false,
+        showAlpha: true,
+        showPalette: true,
+        cancelText: 'Отмена',
+        chooseText: 'Применить',
+        color: "#88880000",
+        maxSelectionSize: 4,
+        showButtons: false,
+        change: function (color) {
+            mapProvider.GetAll().forEach(function (e) {
+                e.ActiveBrush.FillColor.RGBA = color.toHex8String().substring(1);
+            });
         }
     });
 
