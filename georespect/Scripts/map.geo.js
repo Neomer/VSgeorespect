@@ -1,4 +1,6 @@
-﻿/*
+﻿var toolbar = null;
+
+/*
     Интерфейс IColor для хранения цвета для отрисовки геометрических фигур.
 */
 class IColor {
@@ -371,6 +373,10 @@ class YandexPolyline extends Polyline {
     StopEditing() {
         super.Object.editor.stopEditing();
     }
+
+    Destroy() {
+
+    }
 }
 
 class GooglePolyline extends Polyline {
@@ -401,6 +407,10 @@ class GooglePolyline extends Polyline {
 
     StopEditing() {
         super.Object.setEditable(false);
+    }
+
+    Destroy() {
+        super.Object.setMap(null);
     }
 }
 
@@ -470,6 +480,10 @@ class YandexPolygon extends Polygon {
     StopEditing() {
         super.Object.editor.stopEditing();
     }
+
+    Destroy() {
+
+    }
 }
 
 class GooglePolygon extends Polygon {
@@ -501,6 +515,10 @@ class GooglePolygon extends Polygon {
 
     StopEditing() {
         super.Object.setEditable(false);
+    }
+
+    Destroy() {
+        super.Object.setMap(null);
     }
 }
 
@@ -559,6 +577,10 @@ class YandexLine extends Line {
     StopEditing() {
         super.Object.editor.stopEditing();
     }
+
+    Destroy() {
+
+    }
 }
 
 class GoogleLine extends Line {
@@ -592,6 +614,10 @@ class GoogleLine extends Line {
 
     StopEditing() {
         super.Object.setEditable(false);
+    }
+
+    Destroy() {
+        super.Object.setMap(null);
     }
 }
 
@@ -892,7 +918,14 @@ class GoogleMap extends IMap {
 
         this.instance = new google.maps.Map(document.getElementById('map'), {
             zoom: 16,
-            center: { lat: 56.852379, lng: 53.202749 }
+            center: { lat: 56.852379, lng: 53.202749 },
+            disableDoubleClickZoom: false,
+            fullscreenControl: false,
+            minZoom: 16,
+            maxZoom: 18,
+            scrollwheel: false,
+            scaleControl: false,
+            rotateControl: false
         });
 
         this.instance.setOptions({ draggableCursor: 'arrow' });
@@ -924,8 +957,28 @@ class GoogleMap extends IMap {
                 obj.Object.setMap(map);
                 this.clickListener = map.addListener('click', function (e) {
                     var coords = new GoogleCoordinates(e.latLng);
-                    instance.SelectedObject.AddVertex(coords);
-                    instance.SelectedObject.Draw();
+                    if (instance.SelectedObject != null && instance.SelectedObject != undefined)
+                    {
+                        instance.SelectedObject.AddVertex(coords);
+                        instance.SelectedObject.Draw();
+                    }
+                });
+                $(document).on('keyup', function (e) {
+
+                    //console.log(e.keyCode);
+                    if (e.keyCode == 46) // delete
+                    {
+                        if (instance.SelectedObject != null && instance.SelectedObject != undefined) {
+                            instance.SelectedObject.Destroy();
+                        }
+                        toolbar.flush();
+                        instance.EndDrawing();
+                    }
+                    else if (e.keyCode == 27) // escape
+                    {
+                        toolbar.flush();
+                        instance.EndDrawing();
+                    }
                 });
                 map.setOptions({ draggableCursor: 'crosshair' });
             }
@@ -938,6 +991,7 @@ class GoogleMap extends IMap {
             this.clickListener.remove();
         }
         this.instance.setOptions({ draggableCursor: 'arrow' });
+        $(document).off('keyup');
     }
 }
 
@@ -1020,6 +1074,23 @@ class YandexMap extends IMap {
                     instance.SelectedObject.AddVertex(coords);
                     instance.SelectedObject.Draw();
                 });
+                $(document).on('keyup', function (e) {
+
+                    if (e.keyCode == 46) // delete
+                    {
+                        if (instance.SelectedObject != null && instance.SelectedObject != undefined) {
+                            instance.SelectedObject.Destroy();
+                            map.geoObjects.remove(instance.SelectedObject.Object);
+                        }
+                        toolbar.flush();
+                        instance.EndDrawing();
+                    }
+                    else if (e.keyCode == 27) // escape
+                    {
+                        toolbar.flush();
+                        instance.EndDrawing();
+                    }
+                });
                 this.cursor.setKey('crosshair');
             }
         }
@@ -1035,6 +1106,7 @@ class YandexMap extends IMap {
         super.EndDrawing();
         this.cursor.setKey('arrow');
         this.instance.events.remove('click');
+        $(document).off('keyup');
     }
 }
 
@@ -1083,7 +1155,6 @@ function InitGoogleMap() {
     mapProvider.Select('google');
 }
 
-
 ymaps.ready(function () {
     /*
     $('#autocomplete').keyup(function () {
@@ -1121,17 +1192,14 @@ ymaps.ready(function () {
                 instance.addClass('toolbar');
                 settings.controls.forEach(function (e) {
                     var element = document.createElement('div');
-                    if (e.image != null && e.image != undefined)
-                    {
+                    if (e.image != null && e.image != undefined) {
                         $(element).html('<img src="/Content/Images/' + e.image + '" />')
                     } else {
                         $(element).html(e.title);
                     }
                     $(element).addClass('toolbar-button');
                     $(element).attr('command', e.command);
-                    console.log(e.tooltip);
-                    if (e.tooltip != null && e.tooltip != undefined && e.tooltip != '')
-                    {
+                    if (e.tooltip != null && e.tooltip != undefined && e.tooltip != '') {
                         $(element).attr('title', e.tooltip)
                     }
                     $(element).click(function (e) {
@@ -1152,7 +1220,7 @@ ymaps.ready(function () {
 
     }(jQuery));
 
-    var toolbar = $('#toolbar').toolbar({
+    toolbar = $('#toolbar').toolbar({
         controls: [
             {
                 title: "Сообщение",
