@@ -875,6 +875,22 @@ class IMap {
         if (object != null && object != undefined) {
             object.Edit();
         }
+        var instance = this;
+        $(document).on('keyup', function (e) {
+            if (e.keyCode == 46) // delete
+            {
+                if (instance.SelectedObject != null && instance.SelectedObject != undefined) {
+                    instance.SelectedObject.Destroy();
+                }
+                toolbar.flush();
+                instance.EndDrawing();
+            }
+            else if (e.keyCode == 27) // escape
+            {
+                toolbar.flush();
+                instance.EndDrawing();
+            }
+        });
     }
 
     CreateObject(object) {
@@ -961,23 +977,6 @@ class GoogleMap extends IMap {
                     {
                         instance.SelectedObject.AddVertex(coords);
                         instance.SelectedObject.Draw();
-                    }
-                });
-                $(document).on('keyup', function (e) {
-
-                    //console.log(e.keyCode);
-                    if (e.keyCode == 46) // delete
-                    {
-                        if (instance.SelectedObject != null && instance.SelectedObject != undefined) {
-                            instance.SelectedObject.Destroy();
-                        }
-                        toolbar.flush();
-                        instance.EndDrawing();
-                    }
-                    else if (e.keyCode == 27) // escape
-                    {
-                        toolbar.flush();
-                        instance.EndDrawing();
                     }
                 });
                 map.setOptions({ draggableCursor: 'crosshair' });
@@ -1073,23 +1072,6 @@ class YandexMap extends IMap {
                     var coords = new YandexCoordinates(e.get('coords'));
                     instance.SelectedObject.AddVertex(coords);
                     instance.SelectedObject.Draw();
-                });
-                $(document).on('keyup', function (e) {
-
-                    if (e.keyCode == 46) // delete
-                    {
-                        if (instance.SelectedObject != null && instance.SelectedObject != undefined) {
-                            instance.SelectedObject.Destroy();
-                            map.geoObjects.remove(instance.SelectedObject.Object);
-                        }
-                        toolbar.flush();
-                        instance.EndDrawing();
-                    }
-                    else if (e.keyCode == 27) // escape
-                    {
-                        toolbar.flush();
-                        instance.EndDrawing();
-                    }
                 });
                 this.cursor.setKey('crosshair');
             }
@@ -1253,6 +1235,7 @@ ymaps.ready(function () {
             }
         }
     });
+
     $('#service_toolbar').toolbar({
         controls: [
             {
