@@ -1194,9 +1194,8 @@ ymaps.ready(function () {
                     var element = document.createElement('div');
                     if (e.image != null && e.image != undefined) {
                         $(element).html('<img src="/Content/Images/' + e.image + '" />')
-                    } else {
-                        $(element).html(e.title);
                     }
+                    $(element).html($(element).html() + ' ' + e.title);
                     $(element).addClass('toolbar-button');
                     $(element).attr('command', e.command);
                     if (e.tooltip != null && e.tooltip != undefined && e.tooltip != '') {
@@ -1228,7 +1227,7 @@ ymaps.ready(function () {
                 image: "x16/speech-bubble.png"
             },
             {
-                title: "Линия",
+                title: "Отрезок",
                 command: 'line',
                 image: "x16/line.png",
                 tooltip: "Простая линия"
@@ -1258,11 +1257,13 @@ ymaps.ready(function () {
         controls: [
             {
                 title: "Яндекс.Карты",
-                command: 'yandex'
+                command: 'yandex',
+                image: "x16/yandex.png"
             },
             {
                 title: 'Google Maps',
-                command: 'google'
+                command: 'google',
+                image: "x16/google.png"
             }
         ],
         selected: function (n, o) {
