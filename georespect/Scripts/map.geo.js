@@ -70,6 +70,7 @@ class Brush extends IBrush {
         super();
         this.lineColor = new RGBColor();
         this.fillColor = new RGBAColor();
+        this.weight = 1;
     }
 
     get LineColor() {
@@ -78,6 +79,14 @@ class Brush extends IBrush {
 
     get FillColor() {
         return this.fillColor;
+    }
+
+    get Weight() {
+        return this.weight;
+    }
+
+    set Weight(newValue) {
+        this.weight = newValue;
     }
 }
 
@@ -287,7 +296,7 @@ class Polyline extends IPolyline {
     }
 
     Draw() {
-        console.log('Draw Polyline using line color ' + this.Brush.LineColor.String);
+
     }
 
     get MaxVerticies() {
@@ -311,7 +320,8 @@ class YandexPolyline extends Polyline {
 
     Draw() {
         super.Object.options.set({
-            strokeColor: super.Brush.LineColor.String
+            strokeColor: super.Brush.LineColor.String,
+            strokeWidth: super.Brush.Weight
         });
         super.Object.editor.startEditing();
     }
@@ -332,7 +342,10 @@ class GooglePolyline extends Polyline {
     }
 
     Draw() {
-        super.Object.setOptions({ strokeColor: super.Brush.LineColor.String });
+        super.Object.setOptions({
+            strokeColor: super.Brush.LineColor.String,
+            strokeWeight: super.Brush.Weight
+        });
         super.Object.setEditable(true);
     }
 }
@@ -352,7 +365,7 @@ class Polygon extends IPolygon {
     }
 
     Draw() {
-        console.log('Draw Polygon using line color ' + this.Brush.LineColor.String + ' and fill color ' + this.Brush.FillColor.String);
+
     }
 
     get MaxVerticies() {
@@ -390,6 +403,7 @@ class YandexPolygon extends Polygon {
     Draw() {
         super.Object.options.set({
             strokeColor: super.Brush.LineColor.String,
+            strokeWidth: super.Brush.Weight,
             fillColor: super.Brush.FillColor.String
         });
         super.Object.editor.startEditing();
@@ -410,7 +424,11 @@ class GooglePolygon extends Polygon {
     }
 
     Draw() {
-        super.Object.setOptions({ strokeColor: super.Brush.LineColor.String, fillColor: super.Brush.FillColor.String });
+        super.Object.setOptions({
+            strokeColor: super.Brush.LineColor.String,
+            strokeWeight: super.Brush.Weight,
+            fillColor: super.Brush.FillColor.String
+        });
         super.Object.setEditable(true);
     }
 }
@@ -457,7 +475,8 @@ class YandexLine extends Line {
 
     Draw() {
         super.Object.options.set({
-            strokeColor: super.Brush.LineColor.String
+            strokeColor: super.Brush.LineColor.String,
+            strokeWidth: super.Brush.Weight
         });
         super.Object.editor.startEditing();
     }
@@ -481,7 +500,10 @@ class GoogleLine extends Line {
     }
 
     Draw() {
-        super.Object.setOptions({ strokeColor: super.Brush.LineColor.String });
+        super.Object.setOptions({
+            strokeColor: super.Brush.LineColor.String,
+            strokeWeight: super.Brush.Weight
+        });
         super.Object.setEditable(true);
     }
 }
@@ -506,7 +528,7 @@ class Info extends IInfo {
     }
 
     Draw() {
-        console.log('Draw Info');
+
     }
 
     get MaxVerticies() {
@@ -701,6 +723,11 @@ class IMap {
     // Первоначальная инициализация карты
     Init() {
         this.isInit = true;
+
+        this.ActiveBrush.LineColor.RGB = '880000';
+        this.ActiveBrush.FillColor.RGB = '880000';
+        this.ActiveBrush.FillColor.Alpha = '88';
+        this.ActiveBrush.Weight = 2;
     }
 
     get IsInit() {
@@ -758,6 +785,7 @@ class GoogleMap extends IMap {
         super.Init();
         this.geocoder = new GoogleGeoCoder();
         this.factory = new GoogleObjectFactory(this, this.instance);
+
     }
 
     Load() {
@@ -765,16 +793,11 @@ class GoogleMap extends IMap {
             throw "Карты не были инициализированы!";
         }
 
-        super.ActiveBrush.LineColor.RGB = '880000';
-        super.ActiveBrush.FillColor.RGB = '880000';
-        super.ActiveBrush.FillColor.Alpha = '88';
-
         this.instance = new google.maps.Map(document.getElementById('map'), {
             zoom: 16,
             center: { lat: 56.852379, lng: 53.202749 }
         });
 
-        console.log(this.instance);
         this.instance.setOptions({ draggableCursor: 'arrow' });
 
         super.Load();
@@ -831,10 +854,6 @@ class YandexMap extends IMap {
         {
             throw "Карты не были инициализированы!";
         }
-
-        super.ActiveBrush.LineColor.RGB = '880000';
-        super.ActiveBrush.FillColor.RGB = '880000';
-        super.ActiveBrush.FillColor.Alpha = '88';
 
         this.instance = new ymaps.Map(this.ElementName, {
             center: [56.852379, 53.202749],
