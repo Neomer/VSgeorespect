@@ -248,6 +248,14 @@ class IObject {
     Destroy() {
         throw "Not implemented!";
     }
+
+    Edit() {
+        throw "Not implemented!";
+    }
+
+    StopEditing() {
+        throw "Not implemented!";
+    }
 }
 
 /*
@@ -355,6 +363,14 @@ class YandexPolyline extends Polyline {
         });
         super.Object.editor.startEditing();
     }
+
+    Edit() {
+        super.Object.editor.startEditing();
+    }
+
+    StopEditing() {
+        super.Object.editor.stopEditing();
+    }
 }
 
 class GooglePolyline extends Polyline {
@@ -377,6 +393,14 @@ class GooglePolyline extends Polyline {
             strokeWeight: super.Brush.Weight
         });
         super.Object.setEditable(true);
+    }
+
+    Edit() {
+        super.Object.setEditable(true);
+    }
+
+    StopEditing() {
+        super.Object.setEditable(false);
     }
 }
 
@@ -431,14 +455,20 @@ class YandexPolygon extends Polygon {
     }
 
     Draw() {
-        console.log(super.Brush);
-        console.log(super.Brush.FillColor.String);
         super.Object.options.set({
             strokeColor: super.Brush.LineColor.String,
             strokeWidth: super.Brush.Weight,
             fillColor: super.Brush.FillColor.String
         });
+        this.Edit();
+    }
+
+    Edit() {
         super.Object.editor.startEditing();
+    }
+
+    StopEditing() {
+        super.Object.editor.stopEditing();
     }
 }
 
@@ -463,6 +493,14 @@ class GooglePolygon extends Polygon {
             fillColor: super.Brush.FillColor.String
         });
         super.Object.setEditable(true);
+    }
+
+    Edit() {
+        super.Object.setEditable(true);
+    }
+
+    StopEditing() {
+        super.Object.setEditable(false);
     }
 }
 
@@ -513,6 +551,14 @@ class YandexLine extends Line {
         });
         super.Object.editor.startEditing();
     }
+
+    Edit() {
+        super.Object.editor.startEditing();
+    }
+
+    StopEditing() {
+        super.Object.editor.stopEditing();
+    }
 }
 
 class GoogleLine extends Line {
@@ -538,6 +584,14 @@ class GoogleLine extends Line {
             strokeWeight: super.Brush.Weight
         });
         super.Object.setEditable(true);
+    }
+
+    Edit() {
+        super.Object.setEditable(true);
+    }
+
+    StopEditing() {
+        super.Object.setEditable(false);
     }
 }
 
@@ -760,7 +814,7 @@ class IMap {
         this.ActiveBrush.LineColor.RGB = '880000';
         this.ActiveBrush.FillColor.RGB = '880000';
         this.ActiveBrush.FillColor.Alpha = '88';
-        this.ActiveBrush.Weight = 2;
+        this.ActiveBrush.Weight = 1;
     }
 
     get IsInit() {
@@ -787,13 +841,23 @@ class IMap {
         return this.selectedObject;
     }
 
+    SelectObject(object) {
+        this.selectedObject = object;
+        this.objects.forEach(function (e) {
+            e.StopEditing();
+        });
+        if (object != null && object != undefined) {
+            object.Edit();
+        }
+    }
+
     CreateObject(object) {
         if (Object.is(object, null) || Object.is(object, undefined)) {
             throw "Null reference exception!";
         }
         object.Init();
         this.objects.push(object);
-        this.selectedObject = object;
+        this.SelectObject(object);
         object.Brush = this.selectedBrush;
     }
 
@@ -802,7 +866,7 @@ class IMap {
     }
 
     EndDrawing() {
-        throw "Not implemented!";
+        this.SelectObject(null);
     }
 };
 
@@ -861,8 +925,7 @@ class GoogleMap extends IMap {
     }
 
     EndDrawing() {
-        //this.cursor.setKey('arrow');
-        //this.instance.events.remove('click');
+        super.EndDrawing();
         if (this.clickListener != null && this.clickListener != undefined) {
             this.clickListener.remove();
         }
@@ -957,6 +1020,7 @@ class YandexMap extends IMap {
     }
 
     EndDrawing() {
+        super.EndDrawing();
         this.cursor.setKey('arrow');
         this.instance.events.remove('click');
     }
@@ -1095,7 +1159,6 @@ ymaps.ready(function () {
             }
         ],
         selected: function (n, o) {
-            console.log('Tool changed from ' + o + ' to ' + n);
             if (n != null && n != undefined) {
                 mapProvider.ActiveMap.BeginDrawing(n);
             } else {
@@ -1133,6 +1196,9 @@ ymaps.ready(function () {
             console.log('Color pick: ' + color.toHexString().substring(1));
             mapProvider.GetAll().forEach(function (e) {
                 e.ActiveBrush.LineColor.RGB = color.toHexString().substring(1);
+                if (e.SelectedObject != undefined && e.SelectedObject != null) {
+                    e.SelectedObject.Draw();
+                }
             });
         }
     });
@@ -1149,6 +1215,10 @@ ymaps.ready(function () {
         change: function (color) {
             mapProvider.GetAll().forEach(function (e) {
                 e.ActiveBrush.FillColor.RGBA = color.toHex8String().substring(1);
+                if (e.SelectedObject != undefined && e.SelectedObject != null)
+                {
+                    e.SelectedObject.Draw();
+                }
             });
         }
     });
@@ -1157,6 +1227,9 @@ ymaps.ready(function () {
         var weight = this.value;
         mapProvider.GetAll().forEach(function (e) {
             e.ActiveBrush.Weight = weight;
+            if (e.SelectedObject != undefined && e.SelectedObject != null) {
+                e.SelectedObject.Draw();
+            }
         });
     });
 
