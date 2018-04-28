@@ -1349,7 +1349,7 @@ ymaps.ready(function () {
         color: "#880000",
         maxSelectionSize: 4,
         showButtons: false,
-        change: function (color) {
+        move: function (color) {
             console.log('Color pick: ' + color.toHexString().substring(1));
             mapProvider.GetAll().forEach(function (e) {
                 e.ActiveBrush.LineColor.RGB = color.toHexString().substring(1);
@@ -1369,7 +1369,7 @@ ymaps.ready(function () {
         color: "#88880000",
         maxSelectionSize: 4,
         showButtons: false,
-        change: function (color) {
+        move: function (color) {
             mapProvider.GetAll().forEach(function (e) {
                 e.ActiveBrush.FillColor.RGBA = color.toHex8String().substring(1);
                 if (e.SelectedObject != undefined && e.SelectedObject != null)
