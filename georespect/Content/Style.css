@@ -33,3 +33,16 @@ select {
     min-width: 42px;
     border-radius: 3px 3px;
 }
+
+span.step-title {
+    font-weight: bold;
+    display: block;
+}
+
+.step {
+    margin-bottom: 5px;
+}
+
+input[type=text] {
+    width: 100%;
+}
