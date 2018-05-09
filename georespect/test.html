@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -24,13 +24,20 @@
 	<div class="container">
 		<div class="row">
 			<div class="col-md-4">
-				<div class="row">
+                <div class="row step">
+                    <span class="step-title">1. Введите адрес</span>
+                    <input type="text" placeholder="Введите адрес..." value="" />
+                    <input type="button" value="Найти" />
+                </div>
+				<div class="row step">
+                    <span class="step-title">2. Выберите сервис карт</span>
 					<div id="service_toolbar"></div>
 				</div>
 				<div class="row">
+                    <span class="step-title">3. Инструменты для рисования</span>
 					<div id="toolbar"></div>
 				</div>
-				<div class="row">
+				<div class="row step">
 					<span>Линия:</span>
 					<select id="lineWeight">
 						<option>1</option>
@@ -43,6 +50,13 @@
 					<span>Заливка:</span>
 					<input type='text' id="fillColorPicker" />
 				</div>
+                <div class="row step">
+                    <span class="step-title">4. Выберите масштаб</span>
+                </div>
+                <div class="row step">
+                    <span class="step-title">5. Сохранить на компьютер</span>
+                    <input type="button" value="Сохранить в PDF" />
+                </div>
 			</div>
 			<div class="col-md-8">
 				<div id="map" style="width: 600px; height: 800px; margin: auto;"></div>
