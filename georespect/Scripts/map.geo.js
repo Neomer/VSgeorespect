@@ -642,10 +642,20 @@ class IInfo extends IObject {
     constructor(object) {
         super(object);
         this.coordinates = null;
+        this.text = '';
     }
 
     get Coordinates() {
         return this.coordinates;
+    }
+
+    get Text() {
+        return this.text;
+    }
+
+    set Text(value) {
+        this.text = value;
+        this.Draw();
     }
 }
 
@@ -655,7 +665,10 @@ class Info extends IInfo {
     }
 
     Draw() {
-
+        if (super.Text == null || super.Text == undefined || super.Text == '')
+        {
+            $('#infoMessageDialog').dialog('open');
+        }
     }
 
     get MaxVerticies() {
@@ -674,6 +687,8 @@ class Info extends IInfo {
 class GoogleInfo extends Info {
     constructor(object) {
         super(object);
+        object.setContent('test message');
+        object.open();
     }
 
     Init() {
@@ -686,7 +701,8 @@ class GoogleInfo extends Info {
     }
 
     Draw() {
-        
+        super.Draw();
+        super.Object.setContent(super.Text);
     }
 
     Edit() {
@@ -717,7 +733,7 @@ class YandexInfo extends Info {
     }
 
     Draw() {
-        
+        super.Draw();
     }
 
     Edit() {
@@ -776,7 +792,7 @@ class GoogleObjectFactory extends IObjectFactory {
         var obj = null;
         var num = (this.objIndexes[type] == null || this.objIndexes[type] == undefined) ? 1 : this.objIndexes[type] + 1;
         switch (type) {
-            case 'message': obj = new GoogleInfo(new google.maps.Marker()); break;
+            case 'message': obj = new GoogleInfo(new google.maps.InfoWindow()); break;
             case 'line': obj = new GoogleLine(new google.maps.Polyline()); break;
             case 'polyline': obj = new GooglePolyline(new google.maps.Polyline()); break;
             case 'polygon': obj = new GooglePolygon(new google.maps.Polygon()); break;
@@ -1389,6 +1405,24 @@ ymaps.ready(function () {
             }
         });
     });
+
+    $('#infoMessageDialog').dialog({
+        width: '400px',
+        height: 'auto',
+        resizable: false,
+        modal: true,
+        buttons: {
+            'Применить': function () {
+                $(this).dialog('close');
+                mapProvider.ActiveMap.SelectedObject.Text = $(this).find('input[type=text]').val();
+                console.log(mapProvider.ActiveMap.SelectedObject.Text);
+            },
+            'Отмена': function () {
+                $(this).dialog('close');
+            }
+        }
+    });
+    $('#infoMessageDialog').dialog('close');
 
     mapProvider.Get('yandex').Init();
 });
