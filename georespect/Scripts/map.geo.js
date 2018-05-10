@@ -729,7 +729,6 @@ class YandexInfo extends Info {
 
     AddVertex(coords) {
         super.Object.geometry.setCoordinates(coords.Coordinates);
-        super.Object.properties.set('iconContent ', 'dfdf');
     }
 
     Draw() {
