@@ -1,4 +1,6 @@
-﻿var toolbar = null;
+﻿//babeljs.io
+
+var toolbar = null;
 
 /*
     Интерфейс IColor для хранения цвета для отрисовки геометрических фигур.
@@ -733,6 +735,8 @@ class YandexInfo extends Info {
 
     Draw() {
         super.Draw();
+        super.Object.balloon.setData(super.Text);
+        super.Object.balloon.open();
     }
 
     Edit() {
@@ -1151,7 +1155,6 @@ class YandexMap extends IMap {
 
     CreateObject(object) {
         super.CreateObject(object);
-        var map = this;
         object.Object.events.add('click', function (e) {
             map.SelectObject(object);
         });
@@ -1229,7 +1232,7 @@ class MapProvider {
 }
 
 var mapProvider = new MapProvider();
-mapProvider.Add('yandex', new YandexMap('map'));
+//mapProvider.Add('yandex', new YandexMap('map'));
 mapProvider.Add('google', new GoogleMap('map'));
 
 function InitGoogleMap() {
@@ -1237,26 +1240,7 @@ function InitGoogleMap() {
     mapProvider.Select('google');
 }
 
-ymaps.ready(function () {
-    /*
-    $('#autocomplete').keyup(function () {
-        if ($(this).val().length >= 3) {
-            map.GeoCoder.Find($(this).val(), function (result) {
-                $('#autocomplete').autocomplete({
-                    source: result.AutocompleteData,
-                    select: function (e, ui) {
-                        console.log(ui);
-                    }
-                });
-            });
-        }
-    });
-
-    $('#zoom').keyup(function () {
-        map.SetZoom($('#zoom').val());
-    });
-    */
-
+$(function () {
     (function ($) {
         $.fn.toolbar = function (options) {
             var settings = $.extend({
@@ -1275,7 +1259,7 @@ ymaps.ready(function () {
                 settings.controls.forEach(function (e) {
                     var element = document.createElement('div');
                     if (e.image != null && e.image != undefined) {
-                        $(element).html('<img src="/Content/Images/' + e.image + '" />')
+                        $(element).html('<img src="Content/Images/' + e.image + '" />')
                     }
                     $(element).html($(element).html() + ' ' + e.title);
                     $(element).addClass('toolbar-button');
@@ -1338,11 +1322,13 @@ ymaps.ready(function () {
 
     $('#service_toolbar').toolbar({
         controls: [
+            /*
             {
                 title: "Яндекс.Карты",
                 command: 'yandex',
                 image: "x16/yandex.png"
             },
+            */
             {
                 title: 'Google Maps',
                 command: 'google',
@@ -1387,8 +1373,7 @@ ymaps.ready(function () {
         move: function (color) {
             mapProvider.GetAll().forEach(function (e) {
                 e.ActiveBrush.FillColor.RGBA = color.toHex8String().substring(1);
-                if (e.SelectedObject != undefined && e.SelectedObject != null)
-                {
+                if (e.SelectedObject != undefined && e.SelectedObject != null) {
                     e.SelectedObject.Draw();
                 }
             });
@@ -1423,6 +1408,32 @@ ymaps.ready(function () {
     });
     $('#infoMessageDialog').dialog('close');
 
-    mapProvider.Get('yandex').Init();
+})
+
+ymaps.ready(function () {
+    /*
+    $('#autocomplete').keyup(function () {
+        if ($(this).val().length >= 3) {
+            map.GeoCoder.Find($(this).val(), function (result) {
+                $('#autocomplete').autocomplete({
+                    source: result.AutocompleteData,
+                    select: function (e, ui) {
+                        console.log(ui);
+                    }
+                });
+            });
+        }
+    });
+
+    $('#zoom').keyup(function () {
+        map.SetZoom($('#zoom').val());
+    });
+    */
+
+
+    var map = mapProvider.Get('yandex');
+    if (map != null && map != undefined) {
+        map.Init();
+    }
 });
 
