@@ -851,6 +851,10 @@ class GeoCoderResultCollection {
         });
         return ret;
     }
+
+    first() {
+        return this.array[0];
+    }
 }
 
 class GeoCoderResult {
@@ -870,7 +874,26 @@ class GeoCoderResult {
 
 class GoogleGeoCoder extends IGeoCoder {
     Find(address, callback) {
-        return null;
+        $.ajax({
+            url: 'https://maps.googleapis.com/maps/api/geocode/json?address=' + address,
+            cache: false
+        }).done(function (e) {
+            if (e.status != "OK")
+            {
+                alert("Не удалось найти указанный адрес!");
+                return null;
+            }
+            console.log(e);
+
+            var ret = new GeoCoderResultCollection();
+            e.results.forEach(function (item) {
+                console.log(item);
+                ret.push(new GeoCoderResult(item.formatted_address, new GoogleCoordinates(item.geometry.location)));
+            });
+            callback(ret);
+        }).fail(function () {
+            alert("Не удалось выполнить запрос! Попробуйте позже!");
+        });
     }
 }
 
@@ -1014,6 +1037,14 @@ class IMap {
     EndDrawing() {
         this.SelectObject(null);
     }
+
+    SetZoom(value) {
+        throw "Not implemented!";
+    }
+
+    SetCenter(value) {
+        throw "Not implemented!";
+    }
 };
 
 class GoogleMap extends IMap {
@@ -1041,9 +1072,6 @@ class GoogleMap extends IMap {
             center: { lat: 56.852379, lng: 53.202749 },
             disableDoubleClickZoom: false,
             fullscreenControl: false,
-            minZoom: 16,
-            maxZoom: 18,
-            scrollwheel: false,
             scaleControl: false,
             rotateControl: false
         });
@@ -1060,8 +1088,18 @@ class GoogleMap extends IMap {
     CreateObject(object) {
         super.CreateObject(object);
         var map = this;
+        var instance = this;
         object.Object.addListener('click', function (e) {
-            map.SelectObject(object);
+            if (instance.SelectedObject != null && instance.SelectedObject != undefined) {
+                var coords = new GoogleCoordinates(e.latLng);
+                instance.SelectedObject.AddVertex(coords);
+                instance.SelectedObject.Draw();
+            } else {
+                map.SelectObject(object);
+            }
+        });
+        object.Object.addListener('rightclick', function (e) {
+            instance.EndDrawing();
         });
     }
 
@@ -1083,6 +1121,9 @@ class GoogleMap extends IMap {
                         instance.SelectedObject.Draw();
                     }
                 });
+                map.addListener('rightclick', function (e) {
+                    instance.EndDrawing();
+                });
                 map.setOptions({ draggableCursor: 'crosshair' });
             }
         }
@@ -1095,6 +1136,14 @@ class GoogleMap extends IMap {
         }
         this.instance.setOptions({ draggableCursor: 'arrow' });
         $(document).off('keyup');
+    }
+
+    SetZoom(value) {
+        this.instance.setZoom(parseInt(value));
+    }
+
+    SetCenter(value) {
+        this.instance.setCenter(value.Coordinates);
     }
 }
 
@@ -1341,6 +1390,26 @@ $(function () {
         }
     });
 
+    $('#scale_selector').toolbar({
+        controls: [
+            {
+                title: '1:2000',
+                command: 17
+            },
+            {
+                title: '1:5000',
+                command: 16
+            },
+            {
+                title: '1:10000',
+                command: 15
+            }
+        ],
+        selected: function (n, o) {
+            mapProvider.ActiveMap.SetZoom(n);
+        }
+    });
+
     $("#lineColorPicker").spectrum({
         flat: false,
         showAlpha: false,
@@ -1408,6 +1477,15 @@ $(function () {
     });
     $('#infoMessageDialog').dialog('close');
 
+    $('#btnFindAddress').click(function () {
+        console.log(mapProvider.ActiveMap.GeoCoder.Find($('#txtAddress').val(), function (r) {
+            if (r != null && r != undefined && r.Count > 0)
+            {
+                mapProvider.ActiveMap.SetCenter(r.first().Coordinates);
+                $('#txtAddress').val(r.first().Address);
+            }
+        }));
+    });
 })
 
 ymaps.ready(function () {

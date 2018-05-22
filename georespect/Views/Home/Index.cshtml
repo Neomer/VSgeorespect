@@ -7,9 +7,20 @@
     <div class="row">
         <div class="col-md-4">
             <div class="row">
+                <div>
+                    <h4 class="bold">1. Введите адрес</h4>
+                    <div class="search">
+                        <input type="text" value="" placeholder="Введите адрес..." id="txtAddress" />
+                        <input type="button" class="btn btn-default" value="Найти..." id="btnFindAddress" />
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <h4 class="bold">2. Выберите тип карт</h4>
                 <div id="service_toolbar"></div>
             </div>
             <div class="row">
+                <h4 class="bold">3. Инструмент для рисования</h4>
                 <div id="toolbar"></div>
             </div>
             <div class="row">
@@ -24,6 +35,14 @@
                 <input type='text' id="lineColorPicker" />
                 <span>Заливка:</span>
                 <input type='text' id="fillColorPicker" />
+            </div>
+            <div class="row">
+                <h4 class="bold">4. Выберите масштаб</h4>
+                <div id="scale_selector"></div>
+            </div>
+            <div class="row">
+                <h4 class="bold">5. Выберите дальнейшее действие</h4>
+                <input type="button" class="btn btn-primary" value="Сохранить в PDF" />
             </div>
         </div>
         <div class="col-md-8">
