@@ -21,15 +21,41 @@
     <link rel="stylesheet" href="Content/Style.css">
     <link rel="stylesheet" media="screen" type="text/css" href="Content/spectrum.css" />
 	
+	<style>
+		img2 {
+			border: 0;
+			margin: 0;
+			padding: 0;
+			float: left;
+		}
+	</style>
+
 </head>
 <body>
 	<input type="button" id="btnLoad" value="Load images" />
 	<canvas id="images"></canvas>
 	<img id="src" />
 
-	<img src="data:image/png;base64,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" />
+	<div>
+		<img src="https://maps.googleapis.com/maps/api/staticmap?center=40.7171049,-73.9981313&zoom=18&size=300x300&maptype=roadmap&key=AIzaSyDVMh5lFcTxtkxXrL7uXJ6Qd3fSdStbvfs" />
+		<img src="https://maps.googleapis.com/maps/api/staticmap?center=40.7171049,-73.9965213&zoom=18&size=300x300&maptype=roadmap&key=AIzaSyDVMh5lFcTxtkxXrL7uXJ6Qd3fSdStbvfs" />
+		<img src="https://maps.googleapis.com/maps/api/staticmap?center=40.7171049,-73.9949113&zoom=18&size=300x300&maptype=roadmap&key=AIzaSyDVMh5lFcTxtkxXrL7uXJ6Qd3fSdStbvfs" />
+	</div>
+	<div>
+		<img src="https://maps.googleapis.com/maps/api/staticmap?center=40.7171049,-74.0029613&zoom=17&size=300x300&maptype=roadmap&key=AIzaSyDVMh5lFcTxtkxXrL7uXJ6Qd3fSdStbvfs" />
+		<img src="https://maps.googleapis.com/maps/api/staticmap?center=40.7171049,-73.9965213&zoom=17&size=300x300&maptype=roadmap&key=AIzaSyDVMh5lFcTxtkxXrL7uXJ6Qd3fSdStbvfs" />
+		<img src="https://maps.googleapis.com/maps/api/staticmap?center=40.7171049,-73.9900813&zoom=17&size=300x300&maptype=roadmap&key=AIzaSyDVMh5lFcTxtkxXrL7uXJ6Qd3fSdStbvfs" />
+	</div>
+	<div>
+		<img src="https://maps.googleapis.com/maps/api/staticmap?center=40.7146659,-74.0029613&zoom=17&size=300x300&maptype=roadmap&key=AIzaSyDVMh5lFcTxtkxXrL7uXJ6Qd3fSdStbvfs" />
+		<img src="https://maps.googleapis.com/maps/api/staticmap?center=40.7146659,-73.9965213&zoom=17&size=300x300&maptype=roadmap&key=AIzaSyDVMh5lFcTxtkxXrL7uXJ6Qd3fSdStbvfs" />
+		<img src="https://maps.googleapis.com/maps/api/staticmap?center=40.7146659,-73.9900813&zoom=17&size=300x300&maptype=roadmap&key=AIzaSyDVMh5lFcTxtkxXrL7uXJ6Qd3fSdStbvfs" />
+	</div>
 
 	<script>
+		//16 = 0,004879 0,00644
+		//17 = 0,002439 0,00322
+		//17 = 0,0012195 0,00161
 
 		function b64EncodeUnicode(str) {
 			// first we use encodeURIComponent to get percent-encoded UTF-8,
@@ -47,18 +73,47 @@
 
 		$(function () {
 
-			function loadStaticImages() {
-				var context = document.getElementById("images").getContext("2d");
 
-				$.ajax({
-					url: 'https://maps.googleapis.com/maps/api/staticmap?center=Brooklyn+Bridge,New+York,NY&zoom=13&size=100x100&maptype=roadmap&key=AIzaSyDVMh5lFcTxtkxXrL7uXJ6Qd3fSdStbvfs',
-					success: function (result) {
-						var data = 'data:image/png;base64,' + Base64.encodeURI('dankogai');
-						console.log(result);
-					},
-					async: false,
-					cache: false
-				});
+			function loadStaticImages() {
+				var pics = [[], [], []];
+
+				function asyncLoadImage(x, y) {
+					$.ajax({
+						url: 'https://maps.googleapis.com/maps/api/staticmap?center=Brooklyn+Bridge,New+York,NY&zoom=13&size=300x300&maptype=roadmap&key=AIzaSyDVMh5lFcTxtkxXrL7uXJ6Qd3fSdStbvfs',
+						success: function (result) {
+							pics[x][y] = result;
+							if (checkReady()) {
+								console.log('asyncLoadImage(' + x + ', ' + y + ') - ready!');
+							} else {
+								console.log('asyncLoadImage(' + x + ', ' + y + ') - NOT ready!');
+							}
+						},
+						async: false,
+						cache: false
+					});
+				}
+
+				function checkReady() {
+					for (var x = 0; x < 3; x++) {
+						for (var y = 0; y < 3; y++) {
+							var v = pics[x][y];
+							if (v == null || v == undefined) {
+								return false;
+							}
+						}
+					}
+					return true;
+				}
+
+				asyncLoadImage(0, 0);
+				asyncLoadImage(0, 1);
+				asyncLoadImage(0, 2);
+				asyncLoadImage(1, 0);
+				asyncLoadImage(1, 1);
+				asyncLoadImage(1, 2);
+				asyncLoadImage(2, 0);
+				asyncLoadImage(2, 1);
+				asyncLoadImage(2, 2);
 			}
 
 			$('#btnLoad').click(loadStaticImages);

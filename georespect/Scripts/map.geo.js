@@ -1507,6 +1507,49 @@ $(function () {
 
 })
 
+function loadStaticImages() {
+	var pics = [[], [], []];
+
+	function asyncLoadImage(x, y) {
+		$.ajax({
+			url: 'https://maps.googleapis.com/maps/api/staticmap?center=Brooklyn+Bridge,New+York,NY&zoom=13&size=300x300&maptype=roadmap&key=AIzaSyDVMh5lFcTxtkxXrL7uXJ6Qd3fSdStbvfs',
+			success: function (result) {
+				pics[x][y] = result;
+				if (checkReady()) {
+					console.log('asyncLoadImage(' + x + ', ' + y + ') - ready!');
+				} else {
+					console.log('asyncLoadImage(' + x + ', ' + y + ') - NOT ready!');
+				}
+			},
+			async: false,
+			cache: false
+		});
+	}
+
+	function checkReady() {
+		for (var x = 0; x < 3; x++) {
+			for (var y = 0; y < 3; y++) {
+				var v = pics[x][y];
+				if (v == null || v == undefined) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	asyncLoadImage(0, 0);
+	asyncLoadImage(0, 1);
+	asyncLoadImage(0, 2);
+	asyncLoadImage(1, 0);
+	asyncLoadImage(1, 1);
+	asyncLoadImage(1, 2);
+	asyncLoadImage(2, 0);
+	asyncLoadImage(2, 1);
+	asyncLoadImage(2, 2);
+}
+
+
 function SaveToPDF() {
     var image = mapProvider.ActiveMap.GetStaticImage();
 
@@ -1520,6 +1563,7 @@ function SaveToPDF() {
     pdf.setFontSize(12);
     pdf.text(87, 20, 'Ситуационный план');
 
+	loadStaticImages();
 
     pdf.save('Test.pdf');
 }
