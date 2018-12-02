@@ -55,7 +55,7 @@
 	<script>
 		//16 = 0,004879 0,00644
 		//17 = 0,002439 0,00322
-		//17 = 0,0012195 0,00161
+		//18 = 0,0012195 0,00161
 
 		function b64EncodeUnicode(str) {
 			// first we use encodeURIComponent to get percent-encoded UTF-8,
@@ -73,15 +73,52 @@
 
 		$(function () {
 
+			class IStaticMapUrlBuilder {
+
+				// Базовая часть url - http[s]://<host>[:<port>]
+				constructor(basePath) {
+					this.basePath = basePath;
+					this.center = null;
+				}
+
+				set Center(center) {
+					throw 'Center(center) not implemented!';
+				}
+
+				Build() {
+					throw ' Build() not implemented!';
+				}
+
+			}
+
+			class BaseStaticMapUrlBuilder extends IStaticMapUrlBuilder {
+
+				constructor(basePath) {
+					super(basePath);
+				}
+
+				set Center(center) {
+					this.center = center;
+					return this;
+				}
+			}
 
 			function loadStaticImages() {
-				var pics = [[], [], []];
 
-				function asyncLoadImage(x, y) {
+				console.log(new BaseStaticMapUrlBuilder().Build());
+
+				var z = 18;
+				var c = {lat: 0, lng: 0};
+				var pics = [[], [], []];
+				var dlat = 0.0012195 * (z - 18);
+				var dlng = 0.00161 * (z - 18);
+
+				function asyncLoadImage(x, y, zoom, center) {
 					$.ajax({
-						url: 'https://maps.googleapis.com/maps/api/staticmap?center=Brooklyn+Bridge,New+York,NY&zoom=13&size=300x300&maptype=roadmap&key=AIzaSyDVMh5lFcTxtkxXrL7uXJ6Qd3fSdStbvfs',
+						url: 'https://maps.googleapis.com/maps/api/staticmap?center=' + center + '&zoom=' + zoom + '&size=300x300&maptype=roadmap&key=AIzaSyDVMh5lFcTxtkxXrL7uXJ6Qd3fSdStbvfs',
 						success: function (result) {
 							pics[x][y] = result;
+							console.log('image received - size: ' + result.length + ' bytes');
 							if (checkReady()) {
 								console.log('asyncLoadImage(' + x + ', ' + y + ') - ready!');
 							} else {
@@ -105,15 +142,15 @@
 					return true;
 				}
 
-				asyncLoadImage(0, 0);
-				asyncLoadImage(0, 1);
-				asyncLoadImage(0, 2);
-				asyncLoadImage(1, 0);
-				asyncLoadImage(1, 1);
-				asyncLoadImage(1, 2);
-				asyncLoadImage(2, 0);
-				asyncLoadImage(2, 1);
-				asyncLoadImage(2, 2);
+				asyncLoadImage(0, 0, z, (c.lat + dlat) + ',' + (c.lng));
+				asyncLoadImage(0, 1, z, (c.lat) + ',' + (c.lng));
+				asyncLoadImage(0, 2, z, (c.lat - dlat) + ',' + (c.lng));
+				asyncLoadImage(1, 0, z, (c.lat + dlat) + ',' + (c.lng));
+				asyncLoadImage(1, 1, z, (c.lat) + ',' + (c.lng));
+				asyncLoadImage(1, 2, z, (c.lat - dlat) + ',' + (c.lng));
+				asyncLoadImage(2, 0, z, (c.lat + dlat) + ',' + (c.lng - dlng));
+				asyncLoadImage(2, 1, z, (c.lat) + ',' + (c.lng - dlng));
+				asyncLoadImage(2, 2, z, (c.lat - dlat) + ',' + (c.lng - dlng));
 			}
 
 			$('#btnLoad').click(loadStaticImages);
