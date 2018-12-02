@@ -10,7 +10,7 @@ class IColor {
     }
 
     get String() {
-        throw "Not implemented!";
+		throw "IColor.String() - Not implemented!";
     }
 }
 
@@ -91,11 +91,11 @@ class IBrush {
     }
 
     getLineColor() {
-        throw "Not implemented!";
+		throw "IBrush.getLineColor() - Not implemented!";
     }
 
     getFillColor() {
-        throw "Not implemented!";
+		throw "IBrush.getFillColor() - Not implemented!";
     }
 }
 
@@ -128,17 +128,17 @@ class Brush extends IBrush {
     Интерфейс ICoordinates служит для унификации работы с разными типами координатных систем.
 */
 class ICoordinates {
-    get Lat() {
-        throw "Not implemented!";
+	get Lat() {
+		throw "ICoordinates.Lat() - Not implemented!";
     }
     get Lng() {
-        throw "Not implemented!";
+		throw "ICoordinates.Lng() - Not implemented!";
     }
     get String() {
-        throw "Not implemented!";
+		throw "ICoordinates.String() - Not implemented!";
     }
     fromString(data) {
-        throw "Not implemented!";
+		throw "ICoordinates.fromString(data) - Not implemented!";
     }
 }
 
@@ -221,27 +221,27 @@ class IObject {
     }
 
     get IsValid() {
-        throw "Not implemented!";
+		throw "IObject.IsValid() - Not implemented!";
     }
 
     // Максимальное количетсво вершин
     get MaxVerticies() {
-        throw "Not implemented!";
+		throw "IObject.MaxVerticies() - Not implemented!";
     }
 
     // Количество вершин
     get VerticiesCount() {
-        throw "Not implemented!";
+		throw "IObject.VerticiesCount() - Not implemented!";
     }
 
     // Добавляет новую вершину к объекту
     AddVertex(coords) {
-        throw "Not implemented!";
+		throw "IObject.AddVertex(coords) - Not implemented!";
     }
 
     // Устанавливает доп. параметры для объекта
     SetParamaters (params) {
-        throw "Not implemented!";
+		throw "IObject.SetParamaters(params) - Not implemented!";
     }
 
     get ObjectNumber() {
@@ -254,25 +254,25 @@ class IObject {
 
     // Инициализирует объект
     Init() {
-        throw "Not implemented!";
+		throw "IObject.Init() - Not implemented!";
     }
 
     // Отрисовывает объект
     Draw() {
-        throw "Not implemented!";
+		throw "IObject.Draw() - Not implemented!";
     }
 
     // Уничтожает объект
     Destroy() {
-        throw "Not implemented!";
+		throw "IObject.Destroy() - Not implemented!";
     }
 
     Edit() {
-        throw "Not implemented!";
+		throw "IObject.Edit() - Not implemented!";
     }
 
     StopEditing() {
-        throw "Not implemented!";
+		throw "IObject.StopEditing() - Not implemented!";
     }
 }
 
@@ -765,7 +765,7 @@ class IObjectFactory {
     }
 
     CreateObject(type) {
-        throw "Not implemented!";
+		throw "IObjectFactory.CreateObject(type) - Not implemented!";
     }
 };
 
@@ -815,7 +815,7 @@ class GoogleObjectFactory extends IObjectFactory {
 */
 class IGeoCoder {
     Find(address, callback) {
-        throw "Not implemented!";
+		throw "IGeoCoder.Find(address, callback) - Not implemented!";
     }
 }
 
@@ -983,7 +983,7 @@ class IMap {
     }
 
     Unload() {
-        throw "Not implemented!";
+		throw "IMap.Unload() - Not implemented!";
     }
 
     get GeoCoder() {
@@ -1031,7 +1031,7 @@ class IMap {
     }
 
     BeginDrawing(type) {
-        throw "Not implemented!";
+		throw "IMap.BeginDrawing(type) - Not implemented!";
     }
 
     EndDrawing() {
@@ -1039,15 +1039,15 @@ class IMap {
     }
 
     SetZoom(value) {
-        throw "Not implemented!";
+		throw "IMap.SetZoom(value) - Not implemented!";
     }
 
     SetCenter(value) {
-        throw "Not implemented!";
+		throw "IMap.SetCenter(value) - Not implemented!";
     }
 
     GetStaticImage() {
-        throw "Not implemented!";
+		throw "IMap.GetStaticImage() - Not implemented!";
     }
 };
 
