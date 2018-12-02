@@ -2,6 +2,10 @@
 
 var toolbar = null;
 
+function isNullOrUndefined(value) {
+	return value == null || value == undefined;
+}
+
 /*
     Интерфейс IColor для хранения цвета для отрисовки геометрических фигур.
 */
@@ -134,7 +138,7 @@ class ICoordinates {
     get Lng() {
 		throw "ICoordinates.Lng() - Not implemented!";
     }
-    get String() {
+    String() {
 		throw "ICoordinates.String() - Not implemented!";
     }
     fromString(data) {
@@ -158,7 +162,7 @@ class YandexCoordinates extends ICoordinates {
     get Lng() {
         return this.coordinates[1];
     }
-    get String() {
+    String() {
         throw "Not implemented!";
     }
     fromString(data) {
@@ -182,8 +186,8 @@ class GoogleCoordinates extends ICoordinates {
     get Lng() {
         return this.coordinates.lng;
     }
-    get String() {
-        throw "Not implemented!";
+    String() {
+		throw this.coordinates.lat + ',' + this.coordinates.lng;
     }
     fromString(data) {
         throw "Not implemented!";
@@ -929,6 +933,83 @@ class YandexGeoCoder extends IGeoCoder {
 }
 
 /*
+ * Интерфейс билдера Url для загрузки статической карты
+ */
+class IStaticMapUrlBuilder {
+
+	// Базовая часть url - http[s]://<host>[:<port>]
+	constructor(basePath) {
+		this.basePath = basePath;
+		this.center = null;
+	}
+
+	Center(center) {
+		throw 'Center(center) not implemented!';
+	}
+
+	AddMarker(marker) {
+		throw 'AddMarker(marker) not implemented!';
+	}
+
+	AddPath(path) {
+		throw 'AddPath(path) not implemented!';
+	}
+
+	Build() {
+		throw 'IStaticMapUrlBuilder.Build() not implemented!';
+	}
+}
+
+class BaseStaticMapUrlBuilder extends IStaticMapUrlBuilder {
+
+	constructor(basePath) {
+		super(basePath);
+		this.markers = [];
+		this.path = [];
+	}
+
+	Center(value) {
+		this.center = value;
+		return this;
+	}
+
+	AddMarker(marker) {
+		this.markers.push(marker);
+		return this;
+	}
+	
+	AddPath(path) {
+		this.path.push(path);
+		return this;
+	}
+
+	Zoom(value) {
+		this.zoom = value;
+		return this;
+	}
+}
+
+class GoogleStaticUrlBuilder extends BaseStaticMapUrlBuilder {
+
+	constructor() {
+		super('https://maps.googleapis.com/maps/api/staticmap');
+	}
+
+	Build() {
+		if (isNullOrUndefined(this.center == null)) {
+			throw 'Center is required!';
+		}
+		if (isNullOrUndefined(this.zoom)) {
+			throw 'Zoom is required!';
+		}
+		return this.basePath + '?size=300x300&maptype=roadmap&key=AIzaSyDVMh5lFcTxtkxXrL7uXJ6Qd3fSdStbvfs&format=PNG&language=ru-RU' +
+			'&center=' + this.center.String() +
+			'&zoom=' + this.zoom;
+	}
+
+}
+
+/*
     Интерфейс IGeoCoder служит для унификации работы с разными службами карт
 */
 class IMap {
@@ -941,7 +1022,7 @@ class IMap {
         this.isInit = false;
         this.objects = new Array();
         this.geocoder = null;
-        this.factory = null;
+		this.factory = null;
     }
 
     get ActiveBrush() {
@@ -1046,8 +1127,8 @@ class IMap {
 		throw "IMap.SetCenter(value) - Not implemented!";
     }
 
-    GetStaticImage() {
-		throw "IMap.GetStaticImage() - Not implemented!";
+    StaticUrlBuilder() {
+		throw "IMap.StaticUrlBuilder() - Not implemented!";
     }
 };
 
@@ -1056,7 +1137,8 @@ class GoogleMap extends IMap {
         super(divName);
 
         this.instance = null;
-        this.clickListener = null;
+		this.clickListener = null;
+		this.staticUrlBuilder = new GoogleStaticUrlBuilder();
     }
 
     Init() {
@@ -1150,19 +1232,9 @@ class GoogleMap extends IMap {
         this.instance.setCenter(value.Coordinates);
     }
 
-    GetStaticImage() {
-        var topImage = null;
-        var bottomImage = null;
-        $.ajax({
-            url: 'https://maps.googleapis.com/maps/api/staticmap?center=Brooklyn+Bridge,New+York,NY&zoom=13&size=600x300&maptype=roadmap&key=AIzaSyDVMh5lFcTxtkxXrL7uXJ6Qd3fSdStbvfs',
-            success: function (result) {
-                topImage = result.message;
-            },
-            async: false,
-            cache: false
-        });
-        return null;
-    }
+	StaticUrlBuilder() {
+		return this.staticUrlBuilder;
+	}
 }
 
 class YandexMap extends IMap {
