@@ -972,7 +972,7 @@ class GeoCoderResult {
 class GoogleGeoCoder extends IGeoCoder {
     Find(address, callback) {
         $.ajax({
-            url: 'https://maps.googleapis.com/maps/api/geocode/json?address=' + address,
+            url: 'https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyDVMh5lFcTxtkxXrL7uXJ6Qd3fSdStbvfs&address=' + address,
             cache: false
         }).done(function (e) {
             if (e.status != "OK")
@@ -980,8 +980,6 @@ class GoogleGeoCoder extends IGeoCoder {
                 alert("Не удалось найти указанный адрес!");
                 return null;
             }
-            console.log(e);
-
             var ret = new GeoCoderResultCollection();
             e.results.forEach(function (item) {
                 console.log(item);
@@ -1787,7 +1785,7 @@ $(function () {
             }
 
             case 27: { // Esc
-                $('#infoMessageDialog').dialog('close');
+                
                 break;
             }
         } 
@@ -1811,13 +1809,13 @@ $(function () {
     $('#infoMessageDialog').dialog('close');
 
     $('#btnFindAddress').click(function () {
-        console.log(mapProvider.ActiveMap.GeoCoder.Find($('#txtAddress').val(), function (r) {
+        mapProvider.ActiveMap.GeoCoder.Find($('#txtAddress').val(), function (r) {
             if (r != null && r != undefined && r.Count > 0)
             {
                 mapProvider.ActiveMap.SetCenter(r.first().Coordinates);
                 $('#txtAddress').val(r.first().Address);
             }
-        }));
+        })
     });
 
 })
@@ -1860,8 +1858,7 @@ ymaps.ready(function () {
     $('#zoom').keyup(function () {
         map.SetZoom($('#zoom').val());
     });
-    */
-
+*/
 
     var map = mapProvider.Get('yandex');
     if (map != null && map != undefined) {
