@@ -762,6 +762,7 @@ class Info extends IInfo {
     Draw() {
         if (super.Text == null || super.Text == undefined || super.Text == '')
         {
+            $('#infoMessageDialog input[type="text"]').val('');
             $('#infoMessageDialog').dialog('open');
         }
     }
@@ -1805,7 +1806,7 @@ $(function () {
 function SaveToPDF() {
     var pdf = new jsPDF();
     var map = mapProvider.active;
-    
+
     map.EndDrawing();
     map.AddInPDF(pdf);
 
