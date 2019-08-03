@@ -1622,7 +1622,7 @@ $(function () {
                 settings.controls.forEach(function (e) {
                     var element = document.createElement('div');
                     if (e.image != null && e.image != undefined) {
-                        $(element).html('<img src="Content/Images/' + e.image + '" />')
+                        $(element).html('<img src="content/images/' + e.image + '" />')
                     }
                     $(element).html($(element).html() + ' ' + e.title);
                     $(element).addClass('toolbar-button');
@@ -1778,9 +1778,8 @@ $(function () {
     $('#infoMessageDialog input[type="text"]').on('keyup', function(e) {
         switch (e.keyCode) {
             case 13: { // Enter
-                $this = $(this);
                 $('#infoMessageDialog').dialog('close');
-                applyMessageText($this);
+                applyMessageText($(this));
                 break;
             }
 
