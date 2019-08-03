@@ -1577,7 +1577,7 @@ class MapProvider {
 }
 
 var mapProvider = new MapProvider();
-//mapProvider.Add('yandex', new YandexMap('map'));
+mapProvider.Add('yandex', new YandexMap('map'));
 mapProvider.Add('google', new GoogleMap('map'));
 
 function InitGoogleMap() {
@@ -1667,13 +1667,11 @@ $(function () {
 
     $('#service_toolbar').toolbar({
         controls: [
-            /*
             {
                 title: "Яндекс.Карты",
                 command: 'yandex',
                 image: "x16/yandex.png"
             },
-            */
             {
                 title: 'Google Maps',
                 command: 'google',
