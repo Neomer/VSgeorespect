@@ -1805,6 +1805,8 @@ $(function () {
 function SaveToPDF() {
     var pdf = new jsPDF();
     var map = mapProvider.active;
+    
+    map.EndDrawing();
     map.AddInPDF(pdf);
 
     //pdf.addFileToVFS("Arial.ttf", Arial64);
