@@ -1773,6 +1773,26 @@ $(function () {
         });
     });
 
+    var applyMessageText = function(input) {
+        mapProvider.ActiveMap.SelectedObject.Text = input.val();
+    };
+
+    $('#infoMessageDialog input[type="text"]').on('keyup', function(e) {
+        switch (e.keyCode) {
+            case 13: { // Enter
+                $this = $(this);
+                $('#infoMessageDialog').dialog('close');
+                applyMessageText($this);
+                break;
+            }
+
+            case 27: { // Esc
+                $('#infoMessageDialog').dialog('close');
+                break;
+            }
+        } 
+    });
+
     $('#infoMessageDialog').dialog({
         width: '400px',
         height: 'auto',
@@ -1781,8 +1801,7 @@ $(function () {
         buttons: {
             'Применить': function () {
                 $(this).dialog('close');
-                mapProvider.ActiveMap.SelectedObject.Text = $(this).find('input[type=text]').val();
-                console.log(mapProvider.ActiveMap.SelectedObject.Text);
+                applyMessageText($(this).find('input[type=text]'));
             },
             'Отмена': function () {
                 $(this).dialog('close');
