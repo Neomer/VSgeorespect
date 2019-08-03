@@ -1288,13 +1288,32 @@ class GoogleMap extends IMap {
             throw "Карты не были инициализированы!";
         }
 
+        var myStyles = [
+            {
+                featureType: "poi",
+                elementType: "labels",
+                stylers: [
+                      { visibility: "off" }
+                ]
+            },
+            {
+                featureType: "transit.station",
+                elementType: "labels",
+                stylers: [
+                      { visibility: "off" }
+                ]
+            }
+
+        ];
+
         this.instance = new google.maps.Map(document.getElementById('map'), {
             zoom: 16,
             center: { lat: 56.852379, lng: 53.202749 },
             disableDoubleClickZoom: false,
             fullscreenControl: false,
             scaleControl: false,
-            rotateControl: false
+            rotateControl: false,
+            styles: myStyles
         });
 
         this.instance.setOptions({ draggableCursor: 'arrow' });
