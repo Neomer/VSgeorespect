@@ -762,6 +762,7 @@ class Info extends IInfo {
     Draw() {
         if (super.Text == null || super.Text == undefined || super.Text == '')
         {
+            $('#infoMessageDialog input[type="text"]').val('');
             $('#infoMessageDialog').dialog('open');
         }
     }
@@ -971,7 +972,7 @@ class GeoCoderResult {
 class GoogleGeoCoder extends IGeoCoder {
     Find(address, callback) {
         $.ajax({
-            url: 'https://maps.googleapis.com/maps/api/geocode/json?address=' + address,
+            url: 'https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyDVMh5lFcTxtkxXrL7uXJ6Qd3fSdStbvfs&address=' + address,
             cache: false
         }).done(function (e) {
             if (e.status != "OK")
@@ -979,8 +980,6 @@ class GoogleGeoCoder extends IGeoCoder {
                 alert("Не удалось найти указанный адрес!");
                 return null;
             }
-            console.log(e);
-
             var ret = new GeoCoderResultCollection();
             e.results.forEach(function (item) {
                 console.log(item);
@@ -1288,13 +1287,32 @@ class GoogleMap extends IMap {
             throw "Карты не были инициализированы!";
         }
 
+        var myStyles = [
+            {
+                featureType: "poi",
+                elementType: "labels",
+                stylers: [
+                      { visibility: "off" }
+                ]
+            },
+            {
+                featureType: "transit.station",
+                elementType: "labels",
+                stylers: [
+                      { visibility: "off" }
+                ]
+            }
+
+        ];
+
         this.instance = new google.maps.Map(document.getElementById('map'), {
             zoom: 16,
             center: { lat: 56.852379, lng: 53.202749 },
             disableDoubleClickZoom: false,
             fullscreenControl: false,
             scaleControl: false,
-            rotateControl: false
+            rotateControl: false,
+            styles: myStyles
         });
 
         this.instance.setOptions({ draggableCursor: 'arrow' });
@@ -1577,7 +1595,7 @@ class MapProvider {
 }
 
 var mapProvider = new MapProvider();
-//mapProvider.Add('yandex', new YandexMap('map'));
+mapProvider.Add('yandex', new YandexMap('map'));
 mapProvider.Add('google', new GoogleMap('map'));
 
 function InitGoogleMap() {
@@ -1604,7 +1622,7 @@ $(function () {
                 settings.controls.forEach(function (e) {
                     var element = document.createElement('div');
                     if (e.image != null && e.image != undefined) {
-                        $(element).html('<img src="Content/Images/' + e.image + '" />')
+                        $(element).html('<img src="content/images/' + e.image + '" />')
                     }
                     $(element).html($(element).html() + ' ' + e.title);
                     $(element).addClass('toolbar-button');
@@ -1667,13 +1685,11 @@ $(function () {
 
     $('#service_toolbar').toolbar({
         controls: [
-            /*
             {
                 title: "Яндекс.Карты",
                 command: 'yandex',
                 image: "x16/yandex.png"
             },
-            */
             {
                 title: 'Google Maps',
                 command: 'google',
@@ -1755,6 +1771,25 @@ $(function () {
         });
     });
 
+    var applyMessageText = function(input) {
+        mapProvider.ActiveMap.SelectedObject.Text = input.val();
+    };
+
+    $('#infoMessageDialog input[type="text"]').on('keyup', function(e) {
+        switch (e.keyCode) {
+            case 13: { // Enter
+                $('#infoMessageDialog').dialog('close');
+                applyMessageText($(this));
+                break;
+            }
+
+            case 27: { // Esc
+                
+                break;
+            }
+        } 
+    });
+
     $('#infoMessageDialog').dialog({
         width: '400px',
         height: 'auto',
@@ -1763,8 +1798,7 @@ $(function () {
         buttons: {
             'Применить': function () {
                 $(this).dialog('close');
-                mapProvider.ActiveMap.SelectedObject.Text = $(this).find('input[type=text]').val();
-                console.log(mapProvider.ActiveMap.SelectedObject.Text);
+                applyMessageText($(this).find('input[type=text]'));
             },
             'Отмена': function () {
                 $(this).dialog('close');
@@ -1774,13 +1808,13 @@ $(function () {
     $('#infoMessageDialog').dialog('close');
 
     $('#btnFindAddress').click(function () {
-        console.log(mapProvider.ActiveMap.GeoCoder.Find($('#txtAddress').val(), function (r) {
+        mapProvider.ActiveMap.GeoCoder.Find($('#txtAddress').val(), function (r) {
             if (r != null && r != undefined && r.Count > 0)
             {
                 mapProvider.ActiveMap.SetCenter(r.first().Coordinates);
                 $('#txtAddress').val(r.first().Address);
             }
-        }));
+        })
     });
 
 })
@@ -1788,6 +1822,8 @@ $(function () {
 function SaveToPDF() {
     var pdf = new jsPDF();
     var map = mapProvider.active;
+
+    map.EndDrawing();
     map.AddInPDF(pdf);
 
     //pdf.addFileToVFS("Arial.ttf", Arial64);
@@ -1821,8 +1857,7 @@ ymaps.ready(function () {
     $('#zoom').keyup(function () {
         map.SetZoom($('#zoom').val());
     });
-    */
-
+*/
 
     var map = mapProvider.Get('yandex');
     if (map != null && map != undefined) {
