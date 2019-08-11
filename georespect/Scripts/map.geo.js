@@ -426,10 +426,12 @@ class YandexPolyline extends Polyline {
                 coorStr += ',';
             }
         }
-        // MYTODO: добавить цвет
         var options = super.Object.options._options;
-        var width = options.strokeWidth;
-        return 'w:' + width + ',' + coorStr;
+        if (options) {
+            var width = options.strokeWidth;
+            return yandexcolorToUrl(options.strokeColor) + 'w:' + width + ',' + coorStr;
+        }
+        return '';
 
     }
 }
@@ -446,6 +448,9 @@ class GooglePolyline extends Polyline {
     AddVertex(coords) {
         var path = super.Object.getPath();
         path.push(coords.Coordinates);
+        var coordinates = super.Coordinates;
+        coordinates.push(coords.Coordinates);
+
     }
 
     Draw() {
@@ -469,7 +474,20 @@ class GooglePolyline extends Polyline {
     }
 
     ToUrl() {
-        throw "Не реализовано GooglePolyline";
+        var coord = this.coordinates;
+        var linecoords = [];
+        for (var i = 0; i < coord.length; i++) {
+            linecoords.push(coord[i].toUrlValue());
+        }
+
+        var options = super.Object;
+        if (options && coord.length) {
+            var width = options.strokeWeight;
+            return googlecolorToUrl(options.strokeColor) +
+                'weight:' + width +
+                '|' + linecoords.join("|");
+        }
+        return '';
     }
 }
 
@@ -549,8 +567,6 @@ class YandexPolygon extends Polygon {
     ToUrl() {
         var geometry = super.Object.geometry;
         var coord = geometry.getCoordinates();
-        var options = super.Object.options._options;
-        var width = options.strokeWidth;
 
         var linecoords = [];
         for (var i = 0; i < coord.length; i++) {
@@ -561,12 +577,15 @@ class YandexPolygon extends Polygon {
             }
         }
 
-        return 'c:ec473fFF,f:00FF00A0,' +
-            //'f:000000FF,' + //+ fill + 
-            //'c:000000FF,'+ //+ color + 
-            'w:' + width +
-            ',' + linecoords.join(",");
-
+        var options = super.Object.options._options;
+        if (options) {
+            var width = options.strokeWidth;
+            var fillColor = options.fillColor.substring(1);
+            return yandexcolorToUrl(options.strokeColor) + 'f:' + fillColor + ',' +
+                'w:' + width +
+                ',' + linecoords.join(",");
+        }
+        return '';
     }
 }
 
@@ -581,6 +600,7 @@ class GooglePolygon extends Polygon {
 
     AddVertex(coords) {
         var paths = super.Object.getPaths().getAt(0).push(coords.Coordinates);
+        super.Coordinates.push(coords.Coordinates);
     }
 
     Draw() {
@@ -603,6 +623,23 @@ class GooglePolygon extends Polygon {
 
     Destroy() {
         super.Object.setMap(null);
+    }
+    ToUrl() {
+        var coord = this.coordinates;
+        var linecoords = [];
+        for (var i = 0; i < coord.length; i++) {
+            linecoords.push(coord[i].toUrlValue());
+        }
+
+        var options = super.Object;
+        if (options && coord.length) {
+            var width = options.strokeWeight;
+            var fillColor = options.fillColor.substring(1);
+            return googlecolorToUrl(options.strokeColor) + 'fillcolor:0x' + fillColor + '|' +
+                'weight:' + width +
+                '|' + linecoords.join("|");
+        }
+        return '';
     }
 }
 
@@ -680,15 +717,22 @@ class YandexLine extends Line {
         }
 
         var options = super.Object.options._options;
-        var color = options.strokeColor.substring(1);
-        var width = options.strokeWidth;
-        return 'c:' + color + 'FF,' + //  FF - непозрачная
-            'w:' + width +
-            ',' + linecoords.join(",");
-
+        if (options) {
+            var width = options.strokeWidth;
+            return yandexcolorToUrl(options.strokeColor) +
+                'w:' + width +
+                ',' + linecoords.join(",");
+        }
+        return '';
     }
 }
 
+function yandexcolorToUrl(color) {
+    return 'c:' + color.substring(1) + 'FF,'; //  FF - непозрачная
+}
+function googlecolorToUrl(color) {
+    return 'color:0x' + color.substring(1) + 'ff|'; //  FF - непозрачная
+}
 class GoogleLine extends Line {
     constructor(object) {
         super(object);
@@ -696,13 +740,16 @@ class GoogleLine extends Line {
 
     AddVertex(coords) {
         var path = super.Object.getPath();
+        var coordinates = super.Coordinates;
         if (path.length < super.MaxVerticies)
         {
             path.push(coords.Coordinates);
+            coordinates.push(coords.Coordinates);
         }
         else
         {
             path.setAt(path.length - 1, coords.Coordinates);
+            coordinates.push(path.length - 1, coords.Coordinates);
         }
     }
 
@@ -726,7 +773,20 @@ class GoogleLine extends Line {
         super.Object.setMap(null);
     }
     ToUrl() {
-        throw "Не реализовано GoogleLine";
+        var coord = this.coordinates;
+        var linecoords = [];
+        for (var i = 0; i < coord.length; i++) {
+            linecoords.push(coord[i].toUrlValue());
+        }
+
+        var options = super.Object;
+        if (options && coord.length) {
+            var width = options.strokeWeight;
+            return googlecolorToUrl(options.strokeColor) + 
+                'weight:' + width +
+                '|' + linecoords.join("|");
+        }
+        return '';
     }
 }
 
@@ -1077,7 +1137,12 @@ class BaseStaticMapUrlBuilder extends IStaticMapUrlBuilder {
 	Zoom(value) {
 		this.zoom = value;
 		return this;
-	}
+    }
+    GetcoordinateWithOffset(centerCoordinate, scale, offset) {
+        var coordPixel = Math.floor(centerCoordinate * scale);
+        var offetCenter = (coordPixel + offset) / scale;
+        return offetCenter;
+    }
 }
 
 class YandexStaticUrlBuilder extends BaseStaticMapUrlBuilder {
@@ -1093,29 +1158,33 @@ class YandexStaticUrlBuilder extends BaseStaticMapUrlBuilder {
             throw 'Zoom is required!';
         }
 
-        return this.basePath + '?l=map&size=300,400&spn=0.0024,0.0024';
+        return this.basePath + '?l=map&size=300,300&spn=0.0024,0.0024';
     }
 
     // получить центры частей
     Getcoordinates() {
+        var scale = 1 << this.zoom;
         var center = this.center;
         var centerLng = center.Lng;
-        var centerLat = center.Lat;
+        var centerLat = center.Lat;       
 
         // смещение относительно центра 
         // верхняя граница
-        var Lng1 = centerLng - 0.0025489;
-        var Lat1 = centerLat + 0.0031910;
-
+        var Lat1 = this.GetcoordinateWithOffset(centerLat, scale, -10);
+        var Lat2 = this.GetcoordinateWithOffset(centerLat, scale, 220);
+        var Lat3 = this.GetcoordinateWithOffset(centerLat, scale, -240);
         // нижная граница
-        var Lng2 = centerLng + 0.0039010;
-        var Lat2 = centerLat + -0.0014589;
-
+        var Lng1 = this.GetcoordinateWithOffset(centerLng, scale, -146);
+        var Lng2 = this.GetcoordinateWithOffset(centerLng, scale, 275);
+        var Lng3 = this.GetcoordinateWithOffset(centerLng, scale, -146); 
+    
         return [
-            [Lng1, Lat1],
-            [Lng2, Lat1],
             [Lng1, Lat2],
-            [Lng2, Lat2]
+            [Lng2, Lat2],
+            [Lng3, Lat1],
+            [Lng2, Lat1],
+            [Lng1, Lat3],
+            [Lng2, Lat3]
         ];
     }
 }
@@ -1132,12 +1201,34 @@ class GoogleStaticUrlBuilder extends BaseStaticMapUrlBuilder {
 		}
 		if (isNullOrUndefined(this.zoom)) {
 			throw 'Zoom is required!';
-		}
+        }
 		return this.basePath + '?size=300x300&maptype=roadmap&key=AIzaSyDVMh5lFcTxtkxXrL7uXJ6Qd3fSdStbvfs&format=PNG&language=ru-RU' +
-			'&center=' + this.center.String() +
 			'&zoom=' + this.zoom;
-	}
+    }
 
+
+    Getcoordinates() {
+        var scale = 1 << this.zoom;
+        var center = this.center;
+        var centerLng = center.Lng;
+        var centerLat = center.Lat;
+
+        var Lat4 = this.GetcoordinateWithOffset(centerLat, scale, 200);
+        var Lat2 = this.GetcoordinateWithOffset(centerLat, scale, -30); 
+        var Lat1 = this.GetcoordinateWithOffset(centerLat, scale, -262); 
+        var Lng1 = this.GetcoordinateWithOffset(centerLng, scale, -210); 
+        var Lng2 = this.GetcoordinateWithOffset(centerLng, scale, 215);
+        var Lng3 = this.GetcoordinateWithOffset(centerLng, scale, -210);
+
+        return [
+            [Lat4, Lng1],
+            [Lat4, Lng2],
+            [Lat2, Lng1],
+            [Lat2, Lng2],
+            [Lat1, Lng3],
+            [Lat1, Lng2],
+        ];
+    }
 }
 
 /*
@@ -1261,8 +1352,8 @@ class IMap {
     StaticUrlBuilder() {
 		throw "IMap.StaticUrlBuilder() - Not implemented!";
     }
-    AddInPDF(pdf) {
-        throw "IMap.AddInPDF(pdf) - Not implemented!";
+    GetImages() {
+        throw "IMap.GetImages() - Not implemented!";
     }
 };
 
@@ -1392,25 +1483,30 @@ class GoogleMap extends IMap {
 			.Build();
     }
 
-    AddInPDF(pdf) {
-        toggleGoogleMapElements();
-        html2canvas(document.getElementById("map"), {
-            useCORS: true,
-            useOverflow: false
-        }).then(canvas => {
-            toggleGoogleMapElements();
-            var image = canvas.toDataURL("image/png");
-            pdf.addImage(image, 'PNG', 15, 15, 180, 240);
-        });
+
+    GetImages() {
+        var objs = [];
+        var length = this.objects.length;
+        for (var i = 0; i < length; i++) {
+            objs.push(this.objects[i].ToUrl());
+        }
+
+        var url = this.PrepareStaticUrl();
+
+        var coords = this.staticUrlBuilder.Getcoordinates();
+
+        var imgs = [];
+        var objUrl = (length ? '&path=' + objs.join("&path=") : '');
+        for (var i = 0; i < coords.length; i++) {
+            var coord = coords[i];
+            var img = document.createElement('img');
+            img.setAttribute("src", url + '&center=' + coord[0] + ',' + coord[1] + objUrl);
+            imgs.push(img);
+        }
+        return imgs;
     }
 }
 
-function toggleGoogleMapElements() {
-    $(".gm-style .gm-style-mtc").toggle();
-    $(".gm-svpc").toggle();
-    $(".gmnoprint").toggle();
-    $(".gm-style .gm-style-iw-c").css('box-shadow','none !important');
-}
 class YandexMap extends IMap {
     constructor(divName) {
         super(divName);
@@ -1534,27 +1630,14 @@ class YandexMap extends IMap {
         var coords = this.staticUrlBuilder.Getcoordinates();
 
         var imgs = [];
+        var objUrl = (length ? '&pl=' + objs.join("~") : '');
         for (var i = 0; i < coords.length; i++) {
             var coord = coords[i];
             var img = document.createElement('img');
-            img.setAttribute("src", url + '&ll=' + coord[0] + ',' + coord[1] + (length? '&pl=' + objs.join("~") : ''));
+            img.setAttribute("src", url + '&ll=' + coord[0] + ',' + coord[1] + objUrl);
             imgs.push(img);
         }
         return imgs;
-    }
-    AddImagesToPDF(pdf, images) {
-        var padding = 15;
-        var width = 90;
-        var height = 120;
-
-        pdf.addImage(images[0], 'PNG', padding, padding, width, height);
-        pdf.addImage(images[1], 'PNG', padding + width, padding, width, height);
-        pdf.addImage(images[2], 'PNG', padding, padding + height, width, height);
-        pdf.addImage(images[3], 'PNG', padding + width, padding + height, width, height);
-    }
-
-    AddInPDF(pdf) {
-        this.AddImagesToPDF(pdf, this.GetImages());
     }
 }
 
@@ -1822,21 +1905,23 @@ $(function () {
 function SaveToPDF() {
     var pdf = new jsPDF();
     var map = mapProvider.active;
-
     map.EndDrawing();
-    map.AddInPDF(pdf);
-
-    //pdf.addFileToVFS("Arial.ttf", Arial64);
-    //pdf.addFont('Arial.ttf', 'Arial', 'normal');
-
-    //pdf.setFont('Arial');
-    //pdf.setFontSize(12);
-    //pdf.text(87, 20, 'Ситуационный план');
-
+    var images = map.GetImages();
+    if (images.length && images.length == 6) { 
+        var padding = 15;
+        var width = 90;
+        var height = width;
+        pdf.addImage(images[0], 'PNG', padding, padding, width, height);
+        pdf.addImage(images[1], 'PNG', padding + width, padding, width, height);
+        pdf.addImage(images[2], 'PNG', padding, padding + height, width, height);
+        pdf.addImage(images[3], 'PNG', padding + width, padding + height, width, height);
+        pdf.addImage(images[4], 'PNG', padding, padding + (height * 2), width, height);
+        pdf.addImage(images[5], 'PNG', padding + width, padding + (height * 2), width, height);
+    }
     setTimeout(function () {
         // ожидание загрузки картинок
         pdf.save('Test.pdf');
-    }, 500);    
+    }, 500);
 }
 
 ymaps.ready(function () {
