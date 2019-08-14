@@ -1158,7 +1158,7 @@ class YandexStaticUrlBuilder extends BaseStaticMapUrlBuilder {
             throw 'Zoom is required!';
         }
 
-        return this.basePath + '?l=map&size=300,300&spn=0.0024,0.0024';
+        return this.basePath + '?l=map&size=300,300&z=' + this.zoom;
     }
 
     // получить центры частей
@@ -1175,8 +1175,8 @@ class YandexStaticUrlBuilder extends BaseStaticMapUrlBuilder {
         var Lat3 = this.GetcoordinateWithOffset(centerLat, scale, -240);
         // нижная граница
         var Lng1 = this.GetcoordinateWithOffset(centerLng, scale, -146);
-        var Lng2 = this.GetcoordinateWithOffset(centerLng, scale, 275);
-        var Lng3 = this.GetcoordinateWithOffset(centerLng, scale, -146); 
+        var Lng2 = this.GetcoordinateWithOffset(centerLng, scale, 276);
+        var Lng3 = this.GetcoordinateWithOffset(centerLng, scale, -146);
     
         return [
             [Lng1, Lat2],
