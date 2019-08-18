@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-Type" content="text/html; charset=utf-8"/>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ситуационный план</title>
+    <script type="text/javascript" src="scripts/jquery-3.3.1.min.js"></script>
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
+
+    <script type="text/javascript" src="map.geo.js"></script>
+    <script type="text/javascript" src="scripts/jquery-1.12.1.js"></script>
+    <script type="text/javascript" src="scripts/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="scripts/spectrum.js"></script>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js"></script>
+    <script type="text/javascript" src="scripts/html2canvas.min.js"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDVMh5lFcTxtkxXrL7uXJ6Qd3fSdStbvfs&callback=InitGoogleMap" type="text/javascript"></script>
+
+    <link rel="stylesheet" href="content/jquery-ui.min.css">
+    <link rel="stylesheet" href="content/bootstrap.min.css">
+    <link rel="stylesheet" href="content/Style.css">
+    <link rel="stylesheet" media="screen" type="text/css" href="content/spectrum.css" />
+</head>
+<body>
+    <div id="infoMessageDialog" title="Текст сообщения">
+        <p>
+            <input type="text" value="" />
+        </p>
+    </div>
+    <div class="container">
+		<div class="row">
+			<div class="col-md-4">
+                <div class="row step">
+                    <span class="step-title">1. Введите адрес</span>
+                    <input type="text" id="txtAddress" placeholder="Введите адрес..." value="" />
+                    <input type="button" id="btnFindAddress" value="Найти" />
+                </div>
+				<div class="row step">
+                    <span class="step-title">2. Выберите сервис карт</span>
+					<div id="service_toolbar"></div>
+				</div>
+				<div class="row">
+                    <span class="step-title">3. Инструменты для рисования</span>
+					<div id="toolbar"></div>
+				</div>
+				<div class="row step">
+					<span>Линия:</span>
+					<select id="lineWeight">
+						<option>1</option>
+						<option>2</option>
+						<option>3</option>
+						<option>4</option>
+						<option>5</option>
+					</select>
+					<input type='text' id="lineColorPicker" />
+					<span>Заливка:</span>
+					<input type='text' id="fillColorPicker" />
+				</div>
+                <div class="row step">
+                    <span class="step-title">4. Выберите масштаб</span>
+                </div>
+                <div class="row step">
+                    <span class="step-title">5. Сохранить на компьютер</span>
+                    <input type="button" onclick="SaveToPDF();" value="Сохранить в PDF" />
+                </div>
+			</div>
+			<div class="col-md-8">
+				<div id="map" style="width: 630px; height: 800px; margin: auto;"></div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
